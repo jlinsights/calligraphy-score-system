@@ -209,14 +209,14 @@ const ScheduleSection = () => {
             className="bg-[#28a745] hover:bg-[#218838]"
           >
             <FileDown className="w-4 h-4 mr-1" />
-            PDF
+            PDF 다운로드
           </Button>
           <Button 
             onClick={handleCsvExport}
             className="bg-[#007bff] hover:bg-[#0056b3]"
           >
             <Save className="w-4 h-4 mr-1" />
-            CSV
+            CSV 내보내기
           </Button>
         </div>
       </div>
