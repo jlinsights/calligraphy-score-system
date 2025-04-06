@@ -1,9 +1,9 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap');
 
 @layer base {
   :root {
@@ -41,6 +41,11 @@
     --calligraphy-red: 0 72% 48%;
     --calligraphy-paper: 39 33% 95%;
     --calligraphy-gray: 214 3% 57%;
+    
+    --ink-black: #1a1a1a;
+    --rice-paper: #f5f5f0;
+    --celadon: #88A891;
+    --terra-red: #9B4444;
   }
 
   .dark {
@@ -80,8 +85,8 @@
   }
 
   body {
-    @apply bg-background text-foreground font-serif;
-    font-family: 'Noto Serif KR', serif;
+    @apply bg-background text-foreground;
+    font-family: 'Noto Serif TC', 'Noto Serif KR', serif;
   }
 }
 
