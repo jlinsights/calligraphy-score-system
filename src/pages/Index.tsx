@@ -39,7 +39,7 @@ const Index = () => {
         {renderActiveSection()}
         
         <footer className="mt-12 text-center text-sm text-[#8E9196]">
-          <p>© 2025 동양서예협회 심사관리 시스템</p>
+          <p>© 2025 동양서예 심사관리 시스템</p>
           <p className="mt-1">Oriental Calligraphy Evaluation Management System</p>
         </footer>
       </div>
