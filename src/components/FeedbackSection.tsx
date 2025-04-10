@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -409,7 +410,8 @@ const FeedbackSection = () => {
         </div>
       </div>
       
-      <style jsx>{`
+      <style>
+        {`
         .asca-eval-form {
           width: 210mm;
           min-height: 297mm;
@@ -613,7 +615,8 @@ const FeedbackSection = () => {
             grid-template-columns: 1fr;
           }
         }
-      `}</style>
+        `}
+      </style>
     </section>
   );
 };
