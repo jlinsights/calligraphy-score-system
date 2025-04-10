@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -50,43 +49,43 @@
   }
 
   .dark {
-    --background: 20 14.3% 8%;
-    --foreground: 60 9.1% 97.8%;
+    --background: 220 20% 14%;
+    --foreground: 0 0% 95%;
 
-    --card: 20 14.3% 12%;
-    --card-foreground: 60 9.1% 97.8%;
+    --card: 220 20% 16%;
+    --card-foreground: 0 0% 95%;
 
-    --popover: 20 14.3% 10%;
-    --popover-foreground: 60 9.1% 97.8%;
+    --popover: 220 20% 14%;
+    --popover-foreground: 0 0% 95%;
 
-    --primary: 0 72.2% 48%;
-    --primary-foreground: 60 9.1% 97.8%;
+    --primary: 0 72.2% 58%;
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 12 6.5% 15.1%;
-    --secondary-foreground: 60 9.1% 97.8%;
+    --secondary: 215 15% 20%;
+    --secondary-foreground: 0 0% 95%;
 
-    --muted: 12 6.5% 15.1%;
-    --muted-foreground: 24 5.4% 63.9%;
+    --muted: 215 15% 20%;
+    --muted-foreground: 210 10% 80%;
 
     --accent: 0 56% 39%;
-    --accent-foreground: 60 9.1% 97.8%;
+    --accent-foreground: 0 0% 98%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 60 9.1% 97.8%;
+    --destructive: 0 62.8% 40.6%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 12 6.5% 15.1%;
-    --input: 12 6.5% 15.1%;
-    --ring: 24 5.7% 82.9%;
+    --border: 215 15% 25%;
+    --input: 215 15% 25%;
+    --ring: 215 15% 65%;
 
-    --calligraphy-black: 0 0% 90%;
-    --calligraphy-red: 0 72% 58%;
-    --calligraphy-paper: 20 14.3% 12%;
-    --calligraphy-gray: 214 3% 77%;
+    --calligraphy-black: 0 0% 95%;
+    --calligraphy-red: 0 72% 65%;
+    --calligraphy-paper: 220 20% 14%;
+    --calligraphy-gray: 214 10% 85%;
     
     --ink-black: #f5f5f5;
-    --rice-paper: #222222;
+    --rice-paper: #1e1e2e;
     --celadon: #88A891;
-    --terra-red: #c65555;
+    --terra-red: #d16868;
   }
 }
 
