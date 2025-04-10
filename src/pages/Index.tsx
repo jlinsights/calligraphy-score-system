@@ -27,7 +27,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F2E9]/50">
+    <div className="min-h-screen bg-background transition-colors duration-200">
       <CalligraphyHeader />
       
       <div className="max-w-6xl mx-auto px-4 pb-16">
@@ -38,7 +38,7 @@ const Index = () => {
         
         {renderActiveSection()}
         
-        <footer className="mt-12 text-center text-sm text-[#8E9196]">
+        <footer className="mt-12 text-center text-sm text-muted-foreground">
           <p>© 2025 동양서예 심사관리 시스템</p>
           <p className="mt-1">Oriental Calligraphy Evaluation Management System</p>
         </footer>
