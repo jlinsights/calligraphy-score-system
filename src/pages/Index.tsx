@@ -39,7 +39,7 @@ const Index = () => {
         {renderActiveSection()}
         
         <footer className="mt-12 text-center text-sm text-muted-foreground">
-          <p>© 2025 동양서예협회 The Asian Society of Calligraphic Arts</p>
+          <p>© 2025 The Asian Society of Calligraphic Arts (ASCA)</p>
           <p className="mt-1">Oriental Calligraphy Evaluation Management System</p>
         </footer>
       </div>
