@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,7 +12,6 @@ const FeedbackSection = () => {
   
   const formRef = useRef<HTMLDivElement>(null);
   
-  // State for each textarea
   const [overallOpinion, setOverallOpinion] = useState('');
   const [hangulOpinion, setHangulOpinion] = useState('');
   const [hanmunOpinion, setHanmunOpinion] = useState('');
@@ -24,7 +22,6 @@ const FeedbackSection = () => {
   const [finalOpinion, setFinalOpinion] = useState('');
 
   useEffect(() => {
-    // Set current date in Korean format
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -32,7 +29,6 @@ const FeedbackSection = () => {
     const formattedDate = `${year}년 ${month}월 ${day}일`;
     setCurrentDate(formattedDate);
     
-    // Load saved content from localStorage
     const loadFromLocalStorage = (key: string) => {
       const savedValue = localStorage.getItem(`asca-opinion-${key}`);
       return savedValue || '';
@@ -65,18 +61,15 @@ const FeedbackSection = () => {
     try {
       const element = formRef.current;
       
-      // Prepare for PDF generation
       const printContents = document.createElement('div');
       printContents.className = 'print-preview';
       printContents.innerHTML = element.innerHTML;
       
-      // Hide buttons and show text content
       const buttonContainer = printContents.querySelector('.button-container');
       if (buttonContainer) {
         buttonContainer.remove();
       }
       
-      // Replace textareas with divs showing their content
       const textareas = element.querySelectorAll('textarea');
       textareas.forEach((textarea, index) => {
         const textareaId = textarea.id;
@@ -86,7 +79,6 @@ const FeedbackSection = () => {
         if (index < printContentDivs.length) {
           printContentDivs[index].textContent = content;
           
-          // Hide corresponding textarea
           const textareaInPrintContent = printContentDivs[index].previousElementSibling;
           if (textareaInPrintContent && textareaInPrintContent.tagName === 'TEXTAREA') {
             (textareaInPrintContent as HTMLElement).style.display = 'none';
@@ -117,7 +109,6 @@ const FeedbackSection = () => {
       let imgWidthOnPdf = contentWidth;
       let imgHeightOnPdf = imgWidthOnPdf / canvasAspectRatio;
       
-      // Handle multi-page PDF if content is too long
       let currentHeightOnCanvas = 0;
       const pageHeightOnCanvas = contentHeight * (canvasWidth / imgWidthOnPdf);
       
@@ -169,7 +160,6 @@ const FeedbackSection = () => {
         }
       }
       
-      // Generate filename with date
       const dateStr = currentDate.replace(/[^0-9]/g, '');
       const filename = `심사의견서_${dateStr || new Date().toISOString().split('T')[0]}.pdf`;
       pdf.save(filename);
@@ -203,7 +193,6 @@ const FeedbackSection = () => {
         signatureName
       ];
       
-      // Simple CSV generation
       const csvContent = [
         headers.join(','),
         dataRow.map(item => `"${item.replace(/"/g, '""')}"`).join(',')
