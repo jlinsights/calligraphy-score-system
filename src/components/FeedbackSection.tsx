@@ -388,7 +388,7 @@ const FeedbackSection = () => {
         </div>
 
         <div className="button-container">
-          <p className="copyright-footer">© 동양서예협회 심사관리 시스템</p>
+          <p className="copyright-footer">© The Asian Society of Calligraphic Arts (ASCA). All rights reserved.</p>
           <div className="button-group">
             <Button 
               id="opinion-form-download-pdf-button"
