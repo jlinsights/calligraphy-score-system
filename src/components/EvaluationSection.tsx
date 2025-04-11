@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -162,58 +163,60 @@ const EvaluationSection = () => {
         </div>
       </div>
 
-      <div className="criteria-section mb-6 border border-[#88A891] bg-white rounded-md p-4">
-        <h3 className="text-lg font-medium mb-3 text-[#9B4444] border-b border-[#88A891] pb-2">심사기준</h3>
+      <div className="criteria-section mb-6 border-b border-[#E4D7C5] pb-4">
+        <h3 className="text-xl font-medium mb-2 text-[#1A1F2C] border-b border-[#C53030] pb-2 inline-block">심사기준</h3>
         <ol className="ml-5 pl-2 mb-4">
           <li className="mb-1">옛 법첩 기준 작품을 선정하되 서체별 구성, 여백, 조화, 묵색에 중점을 두고 작품성의 우열을 결정한다.</li>
-          <li className="mb-1">점획ㆍ결구ㆍ장법ㆍ조화의 완성미를 심사하되 아래 표의 여러 ���소들을 비교 심사한다.</li>
+          <li className="mb-1">점획ㆍ결구ㆍ장법ㆍ조화의 완성미를 심사하되 아래 표의 여러 요소들을 비교 심사한다.</li>
         </ol>
         
-        <Table className="mb-4 border border-gray-300">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-center bg-[#f8f9fa] border border-gray-300">점획(點劃)</TableHead>
-              <TableHead className="text-center bg-[#f8f9fa] border border-gray-300">결구(結構)</TableHead>
-              <TableHead className="text-center bg-[#f8f9fa] border border-gray-300">장법(章法)</TableHead>
-              <TableHead className="text-center bg-[#f8f9fa] border border-gray-300">조화(調和)</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow>
-              <TableCell className="text-center bg-white border border-gray-300">방원(方圓)</TableCell>
-              <TableCell className="text-center bg-white border border-gray-300">대소(大小)</TableCell>
-              <TableCell className="text-center bg-white border border-gray-300">농담(濃淡)</TableCell>
-              <TableCell className="text-center bg-white border border-gray-300">기운(氣韻)</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="text-center bg-white border border-gray-300">곡직(曲直)</TableCell>
-              <TableCell className="text-center bg-white border border-gray-300">소밀(疏密)</TableCell>
-              <TableCell className="text-center bg-white border border-gray-300">강유(剛柔)</TableCell>
-              <TableCell className="text-center bg-white border border-gray-300">아속(雅俗)</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="text-center bg-white border border-gray-300">경중(輕重)</TableCell>
-              <TableCell className="text-center bg-white border border-gray-300">허실(虛實)</TableCell>
-              <TableCell className="text-center bg-white border border-gray-300">완급(緩急)</TableCell>
-              <TableCell className="text-center bg-white border border-gray-300">미추(美醜)</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="text-center bg-white border border-gray-300">장로(藏露)</TableCell>
-              <TableCell className="text-center bg-white border border-gray-300">향배(向背)</TableCell>
-              <TableCell className="text-center bg-white border border-gray-300">여백(餘白)</TableCell>
-              <TableCell className="text-center bg-white border border-gray-300">통변(通變)</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell className="text-center bg-white border border-gray-300">형질(形質)</TableCell>
-              <TableCell className="text-center bg-white border border-gray-300">호응(呼應)</TableCell>
-              <TableCell className="text-center bg-white border border-gray-300">구성(構成)</TableCell>
-              <TableCell className="text-center bg-white border border-gray-300">창신(創新)</TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse border border-gray-300 mb-4">
+            <thead>
+              <tr className="bg-[#f8f9fa]">
+                <th className="border border-gray-300 p-2 text-center">점획(點劃)</th>
+                <th className="border border-gray-300 p-2 text-center">결구(結構)</th>
+                <th className="border border-gray-300 p-2 text-center">장법(章法)</th>
+                <th className="border border-gray-300 p-2 text-center">조화(調和)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="bg-white">
+                <td className="border border-gray-300 p-2 text-center">방원(方圓)</td>
+                <td className="border border-gray-300 p-2 text-center">대소(大小)</td>
+                <td className="border border-gray-300 p-2 text-center">농담(濃淡)</td>
+                <td className="border border-gray-300 p-2 text-center">기운(氣韻)</td>
+              </tr>
+              <tr className="bg-white">
+                <td className="border border-gray-300 p-2 text-center">곡직(曲直)</td>
+                <td className="border border-gray-300 p-2 text-center">소밀(疏密)</td>
+                <td className="border border-gray-300 p-2 text-center">강유(剛柔)</td>
+                <td className="border border-gray-300 p-2 text-center">아속(雅俗)</td>
+              </tr>
+              <tr className="bg-white">
+                <td className="border border-gray-300 p-2 text-center">경중(輕重)</td>
+                <td className="border border-gray-300 p-2 text-center">허실(虛實)</td>
+                <td className="border border-gray-300 p-2 text-center">완급(緩急)</td>
+                <td className="border border-gray-300 p-2 text-center">미추(美醜)</td>
+              </tr>
+              <tr className="bg-white">
+                <td className="border border-gray-300 p-2 text-center">장로(藏露)</td>
+                <td className="border border-gray-300 p-2 text-center">향배(向背)</td>
+                <td className="border border-gray-300 p-2 text-center">여백(餘白)</td>
+                <td className="border border-gray-300 p-2 text-center">통변(通變)</td>
+              </tr>
+              <tr className="bg-white">
+                <td className="border border-gray-300 p-2 text-center">형질(形質)</td>
+                <td className="border border-gray-300 p-2 text-center">호응(呼應)</td>
+                <td className="border border-gray-300 p-2 text-center">구성(構成)</td>
+                <td className="border border-gray-300 p-2 text-center">창신(創新)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <div className="mb-6">
+      <div className="mb-6 border-b border-[#E4D7C5] pb-4">
         <Table className="border border-gray-300">
           <TableHeader>
             <TableRow>
@@ -350,8 +353,8 @@ const EvaluationSection = () => {
         </Table>
       </div>
 
-      <div className="grading-criteria mb-6 border border-[#88A891] bg-white rounded-md p-4">
-        <h3 className="text-lg font-medium mb-3 text-[#9B4444] border-b border-[#88A891] pb-2">등급결정 및 동점자 처리</h3>
+      <div className="form-section mb-6 border-b border-[#E4D7C5] pb-4">
+        <h3 className="text-xl font-medium mb-2 text-[#1A1F2C] border-b border-[#C53030] pb-2 inline-block">등급결정 및 동점자 처리</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <h4 className="font-medium mb-2">등급결정 기준</h4>
@@ -371,14 +374,15 @@ const EvaluationSection = () => {
             </ul>
           </div>
         </div>
-        <div className="mt-4">
-          <h4 className="font-medium mb-2">심사결과 확정</h4>
-          <ol className="list-decimal pl-5 space-y-1 text-sm">
-            <li>심사위원장은 종합심사 결과를 이사장에게 보고한다.</li>
-            <li>이사회는 심사결과를 검토하고 최종 승인한다.</li>
-            <li>확정된 심사결과는 수상자에게 개별 통보하며, 협회 홈페이지에 게시한다.</li>
-          </ol>
-        </div>
+      </div>
+
+      <div className="form-section mb-6 border-b border-[#E4D7C5] pb-4">
+        <h3 className="text-xl font-medium mb-2 text-[#1A1F2C] border-b border-[#C53030] pb-2 inline-block">심사결과 확정</h3>
+        <ol className="list-decimal pl-5 space-y-1 text-sm">
+          <li>심사위원장은 종합심사 결과를 이사장에게 보고한다.</li>
+          <li>이사회는 심사결과를 검토하고 최종 승인한다.</li>
+          <li>확정된 심사결과는 수상자에게 개별 통보하며, 협회 홈페이지에 게시한다.</li>
+        </ol>
       </div>
 
       <div className="signature-section border-t border-[#C53030] pt-10 flex justify-between items-end">
