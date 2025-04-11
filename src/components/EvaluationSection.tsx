@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,20 +14,17 @@ const EvaluationSection = () => {
   const [currentDate, setCurrentDate] = useState('');
   const [judgeSignature, setJudgeSignature] = useState('');
   
-  // Score state 
   const [pointsScore, setPointsScore] = useState<number | null>(null);
   const [structureScore, setStructureScore] = useState<number | null>(null);
   const [compositionScore, setCompositionScore] = useState<number | null>(null);
   const [harmonyScore, setHarmonyScore] = useState<number | null>(null);
   const [totalScore, setTotalScore] = useState<number>(0);
 
-  // Generate series number on component mount
   useEffect(() => {
     generateSeriesNumber();
     setFormattedCurrentDate();
   }, []);
 
-  // Calculate total score whenever any score changes
   useEffect(() => {
     calculateTotalScore();
   }, [pointsScore, structureScore, compositionScore, harmonyScore]);
@@ -80,16 +76,13 @@ const EvaluationSection = () => {
   };
 
   const handlePdfDownload = () => {
-    // PDF generation would be implemented here
     alert('PDF 다운로드 기능은 추후 구현될 예정입니다.');
   };
 
   const handleCsvExport = () => {
-    // CSV export would be implemented here
     alert('CSV 내보내기 기능은 추후 구현될 예정입니다.');
   };
 
-  // Render score buttons for a specific range
   const renderScoreRange = (category: string, min: number, max: number) => {
     const buttons = [];
     for (let i = min; i <= max; i++) {
@@ -173,7 +166,7 @@ const EvaluationSection = () => {
         <h3 className="text-lg font-medium mb-3 text-[#9B4444] border-b border-[#88A891] pb-2">심사기준</h3>
         <ol className="ml-5 pl-2 mb-4">
           <li className="mb-1">옛 법첩 기준 작품을 선정하되 서체별 구성, 여백, 조화, 묵색에 중점을 두고 작품성의 우열을 결정한다.</li>
-          <li className="mb-1">점획ㆍ결구ㆍ장법ㆍ조화의 완성미를 심사하되 아래 표의 여러 요소들을 비교 심사한다.</li>
+          <li className="mb-1">점획ㆍ결구ㆍ장법ㆍ조화의 완성미를 심사하되 아래 표의 여러 ���소들을 비교 심사한다.</li>
         </ol>
         
         <Table className="mb-4 border border-gray-300">
@@ -355,6 +348,37 @@ const EvaluationSection = () => {
             </TableRow>
           </TableBody>
         </Table>
+      </div>
+
+      <div className="grading-criteria mb-6 border border-[#88A891] bg-white rounded-md p-4">
+        <h3 className="text-lg font-medium mb-3 text-[#9B4444] border-b border-[#88A891] pb-2">등급결정 및 동점자 처리</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h4 className="font-medium mb-2">등급결정 기준</h4>
+            <ul className="list-disc pl-5 space-y-1 text-sm">
+              <li>90점 이상: 대상 및 최우수상 후보</li>
+              <li>85점 이상: 우수상 후보</li>
+              <li>80점 이상: 특선 후보</li>
+              <li>75점 이상: 입선 후보</li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-medium mb-2">동점자 발생시 처리방안</h4>
+            <ul className="list-disc pl-5 space-y-1 text-sm">
+              <li>조화(調和) 점수가 높은 작품우선</li>
+              <li>장법(章法) 점수가 높은 작품우선</li>
+              <li>심사위원 간 협의를 통한 결정</li>
+            </ul>
+          </div>
+        </div>
+        <div className="mt-4">
+          <h4 className="font-medium mb-2">심사결과 확정</h4>
+          <ol className="list-decimal pl-5 space-y-1 text-sm">
+            <li>심사위원장은 종합심사 결과를 이사장에게 보고한다.</li>
+            <li>이사회는 심사결과를 검토하고 최종 승인한다.</li>
+            <li>확정된 심사결과는 수상자에게 개별 통보하며, 협회 홈페이지에 게시한다.</li>
+          </ol>
+        </div>
       </div>
 
       <div className="signature-section border-t border-[#C53030] pt-10 flex justify-between items-end">

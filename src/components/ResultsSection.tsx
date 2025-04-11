@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -43,7 +42,6 @@ const ResultsSection = () => {
     const day = String(now.getDate()).padStart(2, '0');
     setCurrentDate(`${year}년 ${month}월 ${day}일`);
     
-    // Set default evaluation date to today
     setEvaluationDate(`${year}-${month}-${day}`);
   };
 
@@ -53,7 +51,7 @@ const ResultsSection = () => {
       initialRows.push(createNewRow(i + 1));
     }
     setResultsData(initialRows);
-    setNextRowId(5); // Start next ID after the initial rows
+    setNextRowId(5);
   };
 
   const createNewRow = (displayId: number): ResultRow => {
@@ -107,7 +105,6 @@ const ResultsSection = () => {
     
     setResultsData(updatedData);
 
-    // If score fields are updated, recalculate average, rank, and grade
     if (field === 'score1' || field === 'score2' || field === 'score3') {
       updateCalculationsAndRank(updatedData);
     }
@@ -122,7 +119,6 @@ const ResultsSection = () => {
   };
 
   const updateCalculationsAndRank = (data: ResultRow[] = resultsData) => {
-    // Calculate average scores and grades
     let calculatedData = data.map(row => {
       const scores = [row.score1, row.score2, row.score3]
         .map(s => parseFloat(s))
@@ -143,7 +139,6 @@ const ResultsSection = () => {
       };
     });
 
-    // Calculate rankings
     const validData = calculatedData.filter(d => d.average !== null);
     validData.sort((a, b) => (b.average ?? 0) - (a.average ?? 0));
 
@@ -163,7 +158,6 @@ const ResultsSection = () => {
       }
     });
 
-    // Update ranking in original data
     calculatedData = calculatedData.map(row => {
       const validRow = validData.find(vr => vr.rowId === row.rowId);
       if (validRow) {
@@ -191,17 +185,14 @@ const ResultsSection = () => {
 
   const handleExportCsv = () => {
     try {
-      // Create CSV content
       const headers = ['번호', '작가', '작품명', '심사1', '심사2', '심사3', '평균', '순위', '등급', '비고'];
       
       let csvContent = `\uFEFF심사 일시:,${evaluationDate}\n`;
       csvContent += `심사 부문:,${category}\n`;
       csvContent += `작성일:,${currentDate}\n\n`;
       
-      // Add headers
       csvContent += headers.join(',') + '\n';
       
-      // Add data rows
       resultsData.forEach(row => {
         const rowData = [
           row.displayId,
@@ -220,7 +211,6 @@ const ResultsSection = () => {
       
       csvContent += `\n심사위원장 서명:,"${judgeSignature}"`;
       
-      // Create blob and trigger download
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -246,22 +236,18 @@ const ResultsSection = () => {
     isGeneratingPdf.current = true;
     
     try {
-      // Prepare form for PDF generation
       const form = formRef.current;
       form.classList.add('pdf-generating');
       
-      // Create canvas of the form
       const canvas = await html2canvas(form, {
         scale: 1.5,
         useCORS: true,
         logging: false,
         onclone: (clonedDoc) => {
-          // Remove buttons and other non-printable elements
           clonedDoc.querySelectorAll('.button-container, .add-row-button, .delete-row-btn').forEach(
             el => el.remove()
           );
           
-          // Make inputs look like regular text
           clonedDoc.querySelectorAll('input, select').forEach(input => {
             input.setAttribute('style', 'border: none; background-color: transparent; padding: 0; margin: 0;');
             (input as HTMLInputElement).readOnly = true;
@@ -269,7 +255,6 @@ const ResultsSection = () => {
         }
       });
       
-      // Create PDF
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -282,7 +267,6 @@ const ResultsSection = () => {
       const canvasAspectRatio = canvas.width / canvas.height;
       const pageMargin = 15;
       
-      // Add content to PDF
       pdf.setFontSize(16);
       pdf.text('심사 결과 종합표', pdfWidth / 2, pageMargin, { align: 'center' });
       
@@ -290,17 +274,14 @@ const ResultsSection = () => {
       pdf.text(`심사 일시: ${evaluationDate}`, pageMargin, pageMargin + 10);
       pdf.text(`심사 부문: ${category}`, pageMargin, pageMargin + 15);
       
-      // Add the form image
       const contentWidth = pdfWidth - (pageMargin * 2);
       const contentHeight = contentWidth / canvasAspectRatio;
       pdf.addImage(imgData, 'PNG', pageMargin, pageMargin + 25, contentWidth, contentHeight);
       
-      // Add signature at bottom
       const finalY = pdfHeight - pageMargin - 10;
       pdf.text(`작성일: ${currentDate}`, pageMargin, finalY);
       pdf.text(`심사위원장: ${judgeSignature || '_______________'} (서명)`, pdfWidth - pageMargin - 80, finalY);
       
-      // Save PDF
       const filename = `심사결과종합표_${category || '전체'}_${evaluationDate || new Date().toISOString().split('T')[0]}.pdf`;
       pdf.save(filename);
       
@@ -488,6 +469,37 @@ const ResultsSection = () => {
               {resultsData.filter(r => r.grade === 'D').length}명
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className="grading-criteria mb-6 border border-gray-200 p-4 rounded-md bg-white">
+        <h3 className="text-lg font-medium mb-3">등급결정 및 동점자 처리</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h4 className="font-medium mb-2">등급결정 기준</h4>
+            <ul className="list-disc pl-5 space-y-1 text-sm">
+              <li>90점 이상: 대상 및 최우수상 후보</li>
+              <li>85점 이상: 우수상 후보</li>
+              <li>80점 이상: 특선 후보</li>
+              <li>75점 이상: 입선 후보</li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-medium mb-2">동점자 발생시 처리방안</h4>
+            <ul className="list-disc pl-5 space-y-1 text-sm">
+              <li>조화(調和) 점수가 높은 작품우선</li>
+              <li>장법(章法) 점수가 높은 작품우선</li>
+              <li>심사위원 간 협의를 통한 결정</li>
+            </ul>
+          </div>
+        </div>
+        <div className="mt-4">
+          <h4 className="font-medium mb-2">심사결과 확정</h4>
+          <ol className="list-decimal pl-5 space-y-1 text-sm">
+            <li>심사위원장은 종합심사 결과를 이사장에게 보고한다.</li>
+            <li>이사회는 심사결과를 검토하고 최종 승인한다.</li>
+            <li>확정된 심사결과는 수상자에게 개별 통보하며, 협회 홈페이지에 게시한다.</li>
+          </ol>
         </div>
       </div>
 
