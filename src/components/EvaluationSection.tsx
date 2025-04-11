@@ -1,11 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { FileDown, Save } from 'lucide-react';
+import EvaluationHeader from '@/components/evaluation/EvaluationHeader';
+import EvaluationCriteriaTable from '@/components/evaluation/EvaluationCriteriaTable';
+import ScoreTable from '@/components/evaluation/ScoreTable';
+import GradingGuidelines from '@/components/schedule/GradingGuidelines';
+import FormFooter from '@/components/schedule/FormFooter';
 
 const EvaluationSection = () => {
   const [seriesNumber, setSeriesNumber] = useState('');
@@ -112,314 +111,37 @@ const EvaluationSection = () => {
     <section className="calligraphy-section" id="evaluation-score-form">
       <h2 className="calligraphy-section-title">심사표</h2>
       
-      <div className="form-header mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div>
-            <Label htmlFor="series-number" className="block text-sm font-medium text-gray-700 mb-1">심사번호</Label>
-            <Input 
-              id="series-number"
-              value={seriesNumber}
-              readOnly
-              className="w-full bg-[#e9ecef] cursor-not-allowed"
-            />
-          </div>
-          <div>
-            <Label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">부 문</Label>
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger id="category">
-                <SelectValue placeholder="부문 선택..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="한글서예">한글서예</SelectItem>
-                <SelectItem value="한문서예">한문서예</SelectItem>
-                <SelectItem value="현대서예">현대서예</SelectItem>
-                <SelectItem value="캘리그라피">캘리그라피</SelectItem>
-                <SelectItem value="전각・서각">전각・서각</SelectItem>
-                <SelectItem value="문인화・동양화・민화">문인화・동양화・민화</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="artist-name" className="block text-sm font-medium text-gray-700 mb-1">작가이름</Label>
-            <Input 
-              id="artist-name"
-              value={artistName}
-              onChange={(e) => setArtistName(e.target.value)}
-              className="w-full"
-            />
-          </div>
-          <div>
-            <Label htmlFor="work-title" className="block text-sm font-medium text-gray-700 mb-1">작품명제</Label>
-            <Input 
-              id="work-title"
-              value={workTitle}
-              onChange={(e) => setWorkTitle(e.target.value)}
-              className="w-full"
-            />
-          </div>
-        </div>
-      </div>
+      <EvaluationHeader 
+        seriesNumber={seriesNumber}
+        category={category}
+        setCategory={setCategory}
+        artistName={artistName}
+        setArtistName={setArtistName}
+        workTitle={workTitle}
+        setWorkTitle={setWorkTitle}
+      />
 
-      <div className="criteria-section mb-6 border-b border-[#E4D7C5] pb-4">
-        <h3 className="text-xl font-medium mb-2 text-[#1A1F2C] border-b border-[#C53030] pb-2 inline-block">심사기준</h3>
-        <ol className="ml-5 pl-2 mb-4">
-          <li className="mb-1">옛 법첩 기준 작품을 선정하되 서체별 구성, 여백, 조화, 묵색에 중점을 두고 작품성의 우열을 결정한다.</li>
-          <li className="mb-1">점획ㆍ결구ㆍ장법ㆍ조화의 완성미를 심사하되 아래 표의 여러 요소들을 비교 심사한다.</li>
-        </ol>
-        
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse border border-gray-300 mb-4">
-            <thead>
-              <tr className="bg-[#f8f9fa]">
-                <th className="border border-gray-300 p-2 text-center">점획(點劃)</th>
-                <th className="border border-gray-300 p-2 text-center">결구(結構)</th>
-                <th className="border border-gray-300 p-2 text-center">장법(章法)</th>
-                <th className="border border-gray-300 p-2 text-center">조화(調和)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="bg-white">
-                <td className="border border-gray-300 p-2 text-center">방원(方圓)</td>
-                <td className="border border-gray-300 p-2 text-center">대소(大小)</td>
-                <td className="border border-gray-300 p-2 text-center">농담(濃淡)</td>
-                <td className="border border-gray-300 p-2 text-center">기운(氣韻)</td>
-              </tr>
-              <tr className="bg-white">
-                <td className="border border-gray-300 p-2 text-center">곡직(曲直)</td>
-                <td className="border border-gray-300 p-2 text-center">소밀(疏密)</td>
-                <td className="border border-gray-300 p-2 text-center">강유(剛柔)</td>
-                <td className="border border-gray-300 p-2 text-center">아속(雅俗)</td>
-              </tr>
-              <tr className="bg-white">
-                <td className="border border-gray-300 p-2 text-center">경중(輕重)</td>
-                <td className="border border-gray-300 p-2 text-center">허실(虛實)</td>
-                <td className="border border-gray-300 p-2 text-center">완급(緩急)</td>
-                <td className="border border-gray-300 p-2 text-center">미추(美醜)</td>
-              </tr>
-              <tr className="bg-white">
-                <td className="border border-gray-300 p-2 text-center">장로(藏露)</td>
-                <td className="border border-gray-300 p-2 text-center">향배(向背)</td>
-                <td className="border border-gray-300 p-2 text-center">여백(餘白)</td>
-                <td className="border border-gray-300 p-2 text-center">통변(通變)</td>
-              </tr>
-              <tr className="bg-white">
-                <td className="border border-gray-300 p-2 text-center">형질(形質)</td>
-                <td className="border border-gray-300 p-2 text-center">호응(呼應)</td>
-                <td className="border border-gray-300 p-2 text-center">구성(構成)</td>
-                <td className="border border-gray-300 p-2 text-center">창신(創新)</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <EvaluationCriteriaTable />
 
-      <div className="mb-6 border-b border-[#E4D7C5] pb-4">
-        <Table className="border border-gray-300">
-          <TableHeader>
-            <TableRow>
-              <TableHead rowSpan={2} className="text-center bg-[#f8f9fa] border border-gray-300 w-[20%]">평가항목</TableHead>
-              <TableHead colSpan={5} className="text-center bg-[#f8f9fa] border border-gray-300">득점 범위</TableHead>
-              <TableHead rowSpan={2} className="text-center bg-[#f8f9fa] border border-gray-300 w-[15%]">획득점수</TableHead>
-            </TableRow>
-            <TableRow>
-              <TableHead className="text-center bg-[#f8f9fa] border border-gray-300 w-[12%] text-sm">1-5</TableHead>
-              <TableHead className="text-center bg-[#f8f9fa] border border-gray-300 w-[12%] text-sm">6-10</TableHead>
-              <TableHead className="text-center bg-[#f8f9fa] border border-gray-300 w-[12%] text-sm">11-15</TableHead>
-              <TableHead className="text-center bg-[#f8f9fa] border border-gray-300 w-[12%] text-sm">16-20</TableHead>
-              <TableHead className="text-center bg-[#f8f9fa] border border-gray-300 w-[12%] text-sm">21-25</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow>
-              <TableCell className="text-center border border-gray-300">점획(點劃)</TableCell>
-              <TableCell className="text-center border border-gray-300 p-1">
-                <div className="flex justify-center space-x-1">{renderScoreRange('points', 1, 5)}</div>
-              </TableCell>
-              <TableCell className="text-center border border-gray-300 p-1">
-                <div className="flex justify-center space-x-1">{renderScoreRange('points', 6, 10)}</div>
-              </TableCell>
-              <TableCell className="text-center border border-gray-300 p-1">
-                <div className="flex justify-center space-x-1">{renderScoreRange('points', 11, 15)}</div>
-              </TableCell>
-              <TableCell className="text-center border border-gray-300 p-1">
-                <div className="flex justify-center space-x-1">{renderScoreRange('points', 16, 20)}</div>
-              </TableCell>
-              <TableCell className="text-center border border-gray-300 p-1">
-                <div className="flex justify-center space-x-1">{renderScoreRange('points', 21, 25)}</div>
-              </TableCell>
-              <TableCell className="text-center border border-gray-300">
-                <Input 
-                  value={pointsScore !== null ? pointsScore.toString() : ''} 
-                  readOnly
-                  className="text-center font-bold bg-[#e9ecef] w-[80%] mx-auto"
-                />
-              </TableCell>
-            </TableRow>
-            
-            <TableRow>
-              <TableCell className="text-center border border-gray-300">결구(結構)</TableCell>
-              <TableCell className="text-center border border-gray-300 p-1">
-                <div className="flex justify-center space-x-1">{renderScoreRange('structure', 1, 5)}</div>
-              </TableCell>
-              <TableCell className="text-center border border-gray-300 p-1">
-                <div className="flex justify-center space-x-1">{renderScoreRange('structure', 6, 10)}</div>
-              </TableCell>
-              <TableCell className="text-center border border-gray-300 p-1">
-                <div className="flex justify-center space-x-1">{renderScoreRange('structure', 11, 15)}</div>
-              </TableCell>
-              <TableCell className="text-center border border-gray-300 p-1">
-                <div className="flex justify-center space-x-1">{renderScoreRange('structure', 16, 20)}</div>
-              </TableCell>
-              <TableCell className="text-center border border-gray-300 p-1">
-                <div className="flex justify-center space-x-1">{renderScoreRange('structure', 21, 25)}</div>
-              </TableCell>
-              <TableCell className="text-center border border-gray-300">
-                <Input 
-                  value={structureScore !== null ? structureScore.toString() : ''} 
-                  readOnly
-                  className="text-center font-bold bg-[#e9ecef] w-[80%] mx-auto"
-                />
-              </TableCell>
-            </TableRow>
-            
-            <TableRow>
-              <TableCell className="text-center border border-gray-300">장법(章法)</TableCell>
-              <TableCell className="text-center border border-gray-300 p-1">
-                <div className="flex justify-center space-x-1">{renderScoreRange('composition', 1, 5)}</div>
-              </TableCell>
-              <TableCell className="text-center border border-gray-300 p-1">
-                <div className="flex justify-center space-x-1">{renderScoreRange('composition', 6, 10)}</div>
-              </TableCell>
-              <TableCell className="text-center border border-gray-300 p-1">
-                <div className="flex justify-center space-x-1">{renderScoreRange('composition', 11, 15)}</div>
-              </TableCell>
-              <TableCell className="text-center border border-gray-300 p-1">
-                <div className="flex justify-center space-x-1">{renderScoreRange('composition', 16, 20)}</div>
-              </TableCell>
-              <TableCell className="text-center border border-gray-300 p-1">
-                <div className="flex justify-center space-x-1">{renderScoreRange('composition', 21, 25)}</div>
-              </TableCell>
-              <TableCell className="text-center border border-gray-300">
-                <Input 
-                  value={compositionScore !== null ? compositionScore.toString() : ''} 
-                  readOnly
-                  className="text-center font-bold bg-[#e9ecef] w-[80%] mx-auto"
-                />
-              </TableCell>
-            </TableRow>
-            
-            <TableRow>
-              <TableCell className="text-center border border-gray-300">조화(調和)</TableCell>
-              <TableCell className="text-center border border-gray-300 p-1">
-                <div className="flex justify-center space-x-1">{renderScoreRange('harmony', 1, 5)}</div>
-              </TableCell>
-              <TableCell className="text-center border border-gray-300 p-1">
-                <div className="flex justify-center space-x-1">{renderScoreRange('harmony', 6, 10)}</div>
-              </TableCell>
-              <TableCell className="text-center border border-gray-300 p-1">
-                <div className="flex justify-center space-x-1">{renderScoreRange('harmony', 11, 15)}</div>
-              </TableCell>
-              <TableCell className="text-center border border-gray-300 p-1">
-                <div className="flex justify-center space-x-1">{renderScoreRange('harmony', 16, 20)}</div>
-              </TableCell>
-              <TableCell className="text-center border border-gray-300 p-1">
-                <div className="flex justify-center space-x-1">{renderScoreRange('harmony', 21, 25)}</div>
-              </TableCell>
-              <TableCell className="text-center border border-gray-300">
-                <Input 
-                  value={harmonyScore !== null ? harmonyScore.toString() : ''} 
-                  readOnly
-                  className="text-center font-bold bg-[#e9ecef] w-[80%] mx-auto"
-                />
-              </TableCell>
-            </TableRow>
-            
-            <TableRow>
-              <TableCell colSpan={6} className="text-right font-bold bg-[#eee] border border-gray-300">
-                총점
-              </TableCell>
-              <TableCell className="text-center border border-gray-300">
-                <Input 
-                  value={totalScore.toString()} 
-                  readOnly
-                  className="text-center font-bold bg-[#e9ecef] w-[80%] mx-auto text-lg"
-                />
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </div>
+      <ScoreTable
+        pointsScore={pointsScore}
+        structureScore={structureScore}
+        compositionScore={compositionScore}
+        harmonyScore={harmonyScore}
+        totalScore={totalScore}
+        handleScoreClick={handleScoreClick}
+        renderScoreRange={renderScoreRange}
+      />
 
-      <div className="form-section mb-6 border-b border-[#E4D7C5] pb-4">
-        <h3 className="text-xl font-medium mb-2 text-[#1A1F2C] border-b border-[#C53030] pb-2 inline-block">등급결정 및 동점자 처리</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <h4 className="font-medium mb-2">등급결정 기준</h4>
-            <ul className="list-disc pl-5 space-y-1 text-sm">
-              <li>90점 이상: 대상 및 최우수상 후보</li>
-              <li>85점 이상: 우수상 후보</li>
-              <li>80점 이상: 특선 후보</li>
-              <li>75점 이상: 입선 후보</li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-medium mb-2">동점자 발생시 처리방안</h4>
-            <ul className="list-disc pl-5 space-y-1 text-sm">
-              <li>조화(調和) 점수가 높은 작품우선</li>
-              <li>장법(章法) 점수가 높은 작품우선</li>
-              <li>심사위원 간 협의를 통한 결정</li>
-            </ul>
-          </div>
-        </div>
-      </div>
+      <GradingGuidelines />
 
-      <div className="form-section mb-6 border-b border-[#E4D7C5] pb-4">
-        <h3 className="text-xl font-medium mb-2 text-[#1A1F2C] border-b border-[#C53030] pb-2 inline-block">심사결과 확정</h3>
-        <ol className="list-decimal pl-5 space-y-1 text-sm">
-          <li>심사위원장은 종합심사 결과를 이사장에게 보고한다.</li>
-          <li>이사회는 심사결과를 검토하고 최종 승인한다.</li>
-          <li>확정된 심사결과는 수상자에게 개별 통보하며, 협회 홈페이지에 게시한다.</li>
-        </ol>
-      </div>
-
-      <div className="signature-section border-t border-[#C53030] pt-10 flex justify-between items-end">
-        <p className="text-sm text-[#1A1F2C] m-0 pb-2">작성일: {currentDate}</p>
-        <div className="flex items-baseline gap-2">
-          <Label htmlFor="judge-signature" className="font-bold whitespace-nowrap">심사위원:</Label>
-          <div className="w-[250px] relative">
-            <Input 
-              id="judge-signature"
-              value={judgeSignature}
-              onChange={(e) => setJudgeSignature(e.target.value)}
-              className="border-0 border-b border-[#1A1F2C] rounded-none bg-transparent px-0 py-2"
-            />
-          </div>
-          <span className="text-sm text-[#1A1F2C] whitespace-nowrap pb-2">(서명)</span>
-        </div>
-      </div>
-
-      <div className="button-container border-t border-[#C53030] pt-6 mt-10 flex justify-between items-center">
-        <p className="text-xs text-[#8E9196] m-0">© The Asian Society of Calligraphic Arts (ASCA). All rights reserved.</p>
-        <div className="flex gap-2">
-          <Button 
-            onClick={handlePdfDownload}
-            className="bg-[#28a745] hover:bg-[#218838]"
-          >
-            <FileDown className="w-4 h-4 mr-1" />
-            PDF 다운로드
-          </Button>
-          <Button 
-            onClick={handleCsvExport}
-            className="bg-[#007bff] hover:bg-[#0056b3]"
-          >
-            <Save className="w-4 h-4 mr-1" />
-            CSV 내보내기
-          </Button>
-        </div>
-      </div>
+      <FormFooter
+        currentDate={currentDate}
+        judgeSignature={judgeSignature}
+        setJudgeSignature={setJudgeSignature}
+        handlePdfDownload={handlePdfDownload}
+        handleCsvExport={handleCsvExport}
+      />
     </section>
   );
 };
