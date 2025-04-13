@@ -16,5 +16,7 @@
     "ui": "@/components/ui",
     "lib": "@/lib",
     "hooks": "@/hooks"
-  }
+  },
+  "homepage": "https://jury.orientalcalligraphy.org",
+  "name": "vite_react_shadcn_ts"
 }
