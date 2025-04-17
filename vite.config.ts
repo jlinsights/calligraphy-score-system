@@ -5,7 +5,7 @@ import { componentTagger } from "lovable-tagger";
 import fs from 'fs';
 
 export default defineConfig({
-  base: './',
+  base: '/',
   build: {
     outDir: 'dist',
     emptyOutDir: true,
