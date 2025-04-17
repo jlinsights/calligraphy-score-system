@@ -1,10 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import CalligraphyHeader from '@/components/CalligraphyHeader';
 import NavigationMenu from '@/components/NavigationMenu';
-import ScheduleSection from '@/components/ScheduleSection';
-import EvaluationSection from '@/components/EvaluationSection';
-import FeedbackSection from '@/components/FeedbackSection';
-import ResultsSection from '@/components/ResultsSection';
+
+// 동적 임포트를 사용하여 코드 분할
+const ScheduleSection = lazy(() => import('@/components/ScheduleSection'));
+const EvaluationSection = lazy(() => import('@/components/EvaluationSection'));
+const FeedbackSection = lazy(() => import('@/components/FeedbackSection'));
+const ResultsSection = lazy(() => import('@/components/ResultsSection'));
+
+// 로딩 상태를 위한 컴포넌트
+const LoadingComponent = () => (
+  <div className="flex justify-center items-center py-12">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+  </div>
+);
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState('schedule');
@@ -35,7 +44,9 @@ const Index = () => {
           setActiveSection={setActiveSection} 
         />
         
-        {renderActiveSection()}
+        <Suspense fallback={<LoadingComponent />}>
+          {renderActiveSection()}
+        </Suspense>
         
         <footer className="mt-12 text-center text-sm text-muted-foreground">
           <p>© 2025 The Asian Society of Calligraphic Arts (ASCA)</p>
