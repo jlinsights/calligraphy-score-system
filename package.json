@@ -6,11 +6,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node ./node_modules/vite/bin/vite.js build",
     "preview": "vite preview",
-    "predeploy": "NODE_ENV=production npm run build",
-    "deploy": "gh-pages -d dist --dotfiles",
-    "vercel-build": "NODE_ENV=production node ./node_modules/vite/bin/vite.js build"
+    "predeploy": "NODE_ENV=production node ./node_modules/vite/bin/vite.js build",
+    "deploy": "node ./node_modules/gh-pages/bin/gh-pages.js -d dist --dotfiles",
+    "vercel-build": "NODE_ENV=production node ./node_modules/vite/bin/vite.js build",
+    "local-deploy": "npm run build && npx serve dist"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
