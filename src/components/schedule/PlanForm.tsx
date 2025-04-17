@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,7 +34,7 @@ const PlanForm: React.FC<PlanFormProps> = ({
       <div className="form-header mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <Label htmlFor="judge-chair" className="block text-sm font-medium text-gray-700 mb-1">심사위원장</Label>
+            <Label htmlFor="judge-chair" className="block text-sm font-medium text-foreground mb-1">심사위원장</Label>
             <Input 
               id="judge-chair"
               value={judgeChair}
@@ -45,7 +44,7 @@ const PlanForm: React.FC<PlanFormProps> = ({
             />
           </div>
           <div>
-            <Label htmlFor="eval-date" className="block text-sm font-medium text-gray-700 mb-1">심사 일시</Label>
+            <Label htmlFor="eval-date" className="block text-sm font-medium text-foreground mb-1">심사 일시</Label>
             <Input 
               id="eval-date"
               type="date"
@@ -55,7 +54,7 @@ const PlanForm: React.FC<PlanFormProps> = ({
             />
           </div>
           <div>
-            <Label htmlFor="eval-category" className="block text-sm font-medium text-gray-700 mb-1">심사 부문</Label>
+            <Label htmlFor="eval-category" className="block text-sm font-medium text-foreground mb-1">심사 부문</Label>
             <Select value={evalCategory} onValueChange={setEvalCategory}>
               <SelectTrigger id="eval-category">
                 <SelectValue placeholder="부문 선택..." />
@@ -73,11 +72,11 @@ const PlanForm: React.FC<PlanFormProps> = ({
         </div>
       </div>
 
-      <div className="judge-row-container border-b border-[#E4D7C5] pb-4 mb-6">
+      <div className="judge-row-container border-b border-border pb-4 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {judges.map((judge, index) => (
             <div key={index}>
-              <Label htmlFor={`judge-${index+1}`} className="block text-sm font-medium text-gray-700 mb-1">
+              <Label htmlFor={`judge-${index+1}`} className="block text-sm font-medium text-foreground mb-1">
                 심사위원{index+1}
               </Label>
               <Input 
@@ -92,8 +91,8 @@ const PlanForm: React.FC<PlanFormProps> = ({
         </div>
       </div>
 
-      <div className="form-section mb-6 border-b border-[#E4D7C5] pb-4">
-        <h3 className="text-xl font-medium mb-2 text-[#1A1F2C] border-b border-[#C53030] pb-2 inline-block">심사 계획 내용</h3>
+      <div className="form-section mb-6 border-b border-border pb-4">
+        <h3 className="text-xl font-medium mb-2 text-foreground border-b border-primary pb-2 inline-block">심사 계획 내용</h3>
         <div className="plan-content">
           <Textarea 
             id="plan-content-textarea"
@@ -101,7 +100,7 @@ const PlanForm: React.FC<PlanFormProps> = ({
             onChange={(e) => setPlanContent(e.target.value)}
             placeholder="심사 계획 내용을 작성해 주세요."
             rows={10}
-            className="w-full border border-gray-300 p-4 bg-white min-h-[150px]"
+            className="w-full border border-input p-4 bg-card min-h-[150px]"
           />
         </div>
       </div>

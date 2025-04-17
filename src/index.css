@@ -50,42 +50,42 @@
 
   .dark {
     --background: 220 20% 14%;
-    --foreground: 0 0% 95%;
+    --foreground: 0 0% 98%;
 
     --card: 220 20% 16%;
-    --card-foreground: 0 0% 95%;
+    --card-foreground: 0 0% 98%;
 
     --popover: 220 20% 14%;
-    --popover-foreground: 0 0% 95%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 0 72.2% 58%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 0 72.2% 65%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 215 15% 20%;
-    --secondary-foreground: 0 0% 95%;
+    --secondary-foreground: 0 0% 98%;
 
     --muted: 215 15% 20%;
-    --muted-foreground: 210 10% 80%;
+    --muted-foreground: 210 10% 90%;
 
-    --accent: 0 56% 39%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 0 56% 45%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62.8% 40.6%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 215 15% 25%;
+    --border: 215 15% 30%;
     --input: 215 15% 25%;
-    --ring: 215 15% 65%;
+    --ring: 215 15% 70%;
 
-    --calligraphy-black: 0 0% 95%;
-    --calligraphy-red: 0 72% 65%;
+    --calligraphy-black: 0 0% 98%;
+    --calligraphy-red: 0 72% 70%;
     --calligraphy-paper: 220 20% 14%;
-    --calligraphy-gray: 214 10% 85%;
+    --calligraphy-gray: 214 10% 90%;
     
-    --ink-black: #f5f5f5;
+    --ink-black: #f8f8f8;
     --rice-paper: #1e1e2e;
-    --celadon: #88A891;
-    --terra-red: #d16868;
+    --celadon: #96b69e;
+    --terra-red: #e07676;
   }
 }
 
@@ -144,4 +144,149 @@
 
 .dark .seal {
   color: var(--primary, #d16868);
+}
+
+/* PDF 생성 관련 스타일 추가 */
+.pdf-generating * {
+  transition: none !important;
+}
+
+/* 버튼 텍스트가 보이도록 개선 */
+.button-group button {
+  font-weight: 500;
+  color: var(--primary-foreground) !important;
+}
+
+/* 다크 모드 textarea 색상 조정 */
+.dark textarea {
+  color: var(--foreground) !important;
+  background-color: var(--card) !important;
+  border-color: var(--border) !important;
+}
+
+/* 다크 모드 가독성 개선 */
+.dark input,
+.dark textarea,
+.dark select {
+  color: hsl(var(--foreground)) !important;
+  background-color: hsl(var(--card)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+
+.dark button[role="combobox"] {
+  color: hsl(var(--foreground)) !important;
+  background-color: hsl(var(--card)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+
+.dark label,
+.dark p,
+.dark h1,
+.dark h2,
+.dark h3,
+.dark h4,
+.dark h5,
+.dark h6,
+.dark span,
+.dark div {
+  color: hsl(var(--foreground));
+}
+
+.dark .signature-section {
+  border-color: hsl(var(--primary)) !important;
+}
+
+.dark .button-container {
+  border-color: hsl(var(--primary)) !important;
+}
+
+/* 버튼 텍스트 가독성 개선 */
+.button-group button,
+.dark .button-group button {
+  font-weight: 500;
+  color: hsl(var(--primary-foreground)) !important;
+}
+
+/* 모든 테이블 및 테이블 셀에 테마 색상 적용 */
+table {
+  border-color: hsl(var(--border));
+}
+
+.dark table {
+  border-color: hsl(var(--border)) !important;
+}
+
+.dark table thead tr {
+  background-color: hsl(var(--secondary)) !important;
+}
+
+.dark table th {
+  background-color: hsl(var(--secondary)) !important;
+  color: hsl(var(--foreground)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+
+.dark table td {
+  background-color: hsl(var(--card)) !important;
+  color: hsl(var(--foreground)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+
+.dark table tr:nth-child(even) td {
+  background-color: hsl(var(--muted)) !important;
+}
+
+/* 다크 모드에서 텍스트 가독성 개선 */
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+  color: hsl(var(--foreground)) !important;
+}
+
+.dark p, .dark li, .dark label, .dark span {
+  color: hsl(var(--foreground)) !important;
+}
+
+/* 테두리 색상 개선 */
+.dark .border-\[\#E4D7C5\] {
+  border-color: hsl(var(--border)) !important;
+}
+
+.dark .border-gray-300 {
+  border-color: hsl(var(--border)) !important;
+}
+
+/* 다크 모드에서 배경색 개선 */
+.dark .bg-\[\#f8f9fa\] {
+  background-color: hsl(var(--card)) !important;
+}
+
+.dark .bg-white {
+  background-color: hsl(var(--card)) !important;
+}
+
+/* 테이블 스타일 다크모드 개선 추가 */
+.dark .bg-card {
+  background-color: hsl(var(--card)) !important;
+  color: hsl(var(--card-foreground)) !important;
+}
+
+.dark .bg-muted {
+  background-color: hsl(var(--secondary)) !important;
+  color: hsl(var(--secondary-foreground)) !important;
+}
+
+/* 점수 테이블 버튼 스타일 개선 */
+.dark button.bg-primary {
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+}
+
+.dark button.text-primary {
+  color: hsl(var(--primary)) !important;
+}
+
+/* 점수 입력 필드 스타일 개선 */
+.dark input.bg-muted {
+  background-color: hsl(var(--muted)) !important;
+  color: hsl(var(--foreground)) !important;
+  border-color: hsl(var(--border)) !important;
 }

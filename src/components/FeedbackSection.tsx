@@ -4,11 +4,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
+import './FeedbackSection.css';
 
-const FeedbackSection = () => {
+const FeedbackSection: React.FC = () => {
   const [currentDate, setCurrentDate] = useState('');
   const [signatureName, setSignatureName] = useState('');
   const [isPdfGenerating, setIsPdfGenerating] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState<boolean>(false);
+  const [isExportingCSV, setIsExportingCSV] = useState<boolean>(false);
   
   const formRef = useRef<HTMLDivElement>(null);
   
@@ -29,11 +32,10 @@ const FeedbackSection = () => {
     const formattedDate = `${year}년 ${month}월 ${day}일`;
     setCurrentDate(formattedDate);
     
-    const loadFromLocalStorage = (key: string) => {
-      const savedValue = localStorage.getItem(`asca-opinion-${key}`);
-      return savedValue || '';
-    };
-    
+    loadAllFromLocalStorage();
+  }, []);
+  
+  const loadAllFromLocalStorage = () => {
     setOverallOpinion(loadFromLocalStorage('asca-overall-opinion'));
     setHangulOpinion(loadFromLocalStorage('asca-hangul-opinion'));
     setHanmunOpinion(loadFromLocalStorage('asca-hanmun-opinion'));
@@ -47,141 +49,174 @@ const FeedbackSection = () => {
     if (savedSignature) {
       setSignatureName(savedSignature);
     }
-  }, []);
+  };
+  
+  const loadFromLocalStorage = (key: string) => {
+    const savedValue = localStorage.getItem(`asca-opinion-${key}`);
+    return savedValue || '';
+  };
   
   const saveToLocalStorage = (id: string, value: string) => {
     localStorage.setItem(`asca-opinion-${id}`, value);
   };
   
-  const handleDownloadPDF = async () => {
+  const updatePrintContent = () => {
     if (!formRef.current) return;
     
-    setIsPdfGenerating(true);
-    
-    try {
-      const element = formRef.current;
+    const textareas = formRef.current.querySelectorAll('textarea');
+    textareas.forEach((textarea) => {
+      const textareaId = textarea.id;
+      const printContentId = textareaId + '-print';
+      const printContent = document.getElementById(printContentId);
       
-      const printContents = document.createElement('div');
-      printContents.className = 'print-preview';
-      printContents.innerHTML = element.innerHTML;
-      
-      const buttonContainer = printContents.querySelector('.button-container');
-      if (buttonContainer) {
-        buttonContainer.remove();
+      if (printContent) {
+        printContent.textContent = (textarea as HTMLTextAreaElement).value;
       }
+    });
+  };
+  
+  const handleDownloadPDF = async () => {
+    try {
+      setIsGeneratingPDF(true);
       
-      const textareas = element.querySelectorAll('textarea');
-      textareas.forEach((textarea, index) => {
-        const textareaId = textarea.id;
-        const content = (textarea as HTMLTextAreaElement).value;
-        
-        const printContentDivs = printContents.querySelectorAll('.print-content');
-        if (index < printContentDivs.length) {
-          printContentDivs[index].textContent = content;
-          
-          const textareaInPrintContent = printContentDivs[index].previousElementSibling;
-          if (textareaInPrintContent && textareaInPrintContent.tagName === 'TEXTAREA') {
-            (textareaInPrintContent as HTMLElement).style.display = 'none';
-          }
+      if (!formRef.current) {
+        alert('폼 정보를 가져올 수 없습니다.');
+        setIsGeneratingPDF(false);
+        return;
+      }
+
+      // 원본 폼 요소 복제
+      const originalForm = formRef.current;
+      const clonedForm = originalForm.cloneNode(true) as HTMLElement;
+      
+      // 복제된 폼에 스타일 추가
+      clonedForm.style.width = '790px'; // A4 너비에 맞게 조정
+      clonedForm.style.minHeight = '1100px'; // A4 높이에 맞게 조정
+      clonedForm.style.padding = '40px';
+      clonedForm.style.backgroundColor = 'white';
+      clonedForm.style.position = 'absolute';
+      clonedForm.style.left = '-9999px';
+      clonedForm.style.top = '0';
+      document.body.appendChild(clonedForm);
+
+      // 텍스트영역의 값을 복제된 폼에 설정
+      const textareas = originalForm.querySelectorAll('textarea');
+      const clonedTextareas = clonedForm.querySelectorAll('textarea');
+      textareas.forEach((textarea, i) => {
+        if (clonedTextareas[i]) {
+          (clonedTextareas[i] as HTMLTextAreaElement).value = (textarea as HTMLTextAreaElement).value;
+          (clonedTextareas[i] as HTMLTextAreaElement).style.height = 'auto';
+          (clonedTextareas[i] as HTMLTextAreaElement).style.minHeight = '100px';
+          (clonedTextareas[i] as HTMLTextAreaElement).style.overflow = 'visible';
         }
       });
-      
-      const canvas = await html2canvas(element, {
-        scale: 1.5,
-        useCORS: true,
-        logging: false,
+
+      // 이름 입력 영역 설정
+      const signatureInput = clonedForm.querySelector('#signature-name') as HTMLInputElement;
+      if (signatureInput) {
+        signatureInput.value = signatureName;
+      }
+
+      // PDF 생성
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'px',
+        format: 'a4',
+        hotfixes: ['px_scaling'],
       });
-      
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      
+
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
-      
-      const canvasWidth = canvas.width;
-      const canvasHeight = canvas.height;
-      const canvasAspectRatio = canvasWidth / canvasHeight;
-      
-      const pageMargin = 15;
-      const contentWidth = pdfWidth - (pageMargin * 2);
-      const contentHeight = pdfHeight - (pageMargin * 2);
-      
-      let imgWidthOnPdf = contentWidth;
-      let imgHeightOnPdf = imgWidthOnPdf / canvasAspectRatio;
-      
-      let currentHeightOnCanvas = 0;
-      const pageHeightOnCanvas = contentHeight * (canvasWidth / imgWidthOnPdf);
-      
-      while (currentHeightOnCanvas < canvasHeight) {
-        const remainingCanvasHeight = canvasHeight - currentHeightOnCanvas;
-        let availablePdfHeight = pdfHeight - pageMargin - (currentHeightOnCanvas === 0 ? pageMargin : pageMargin);
-        let pdfY = pageMargin;
+      const margin = 20;
+
+      try {
+        // html2canvas를 사용하여 복제된 폼을 이미지로 변환
+        const canvas = await html2canvas(clonedForm, {
+          scale: 2, // 해상도 향상
+          useCORS: true,
+          logging: false,
+          backgroundColor: '#ffffff'
+        });
+
+        // 캔버스를 이미지로 변환
+        const imgData = canvas.toDataURL('image/png');
         
-        if (currentHeightOnCanvas > 0) {
-          pdf.addPage();
-          pdfY = pageMargin;
-          availablePdfHeight = contentHeight;
-        }
+        // 이미지 크기 계산
+        const imgWidth = pdfWidth - (margin * 2);
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
         
-        let sliceHeightOnPdf = availablePdfHeight;
-        let sliceHeightOnCanvas = sliceHeightOnPdf * (canvasWidth / imgWidthOnPdf);
+        // 페이지 나누기를 위한 계산
+        const pageCount = Math.ceil(imgHeight / (pdfHeight - (margin * 2)));
         
-        if (sliceHeightOnCanvas > remainingCanvasHeight) {
-          sliceHeightOnCanvas = remainingCanvasHeight;
-          sliceHeightOnPdf = sliceHeightOnCanvas * (imgWidthOnPdf / canvasWidth);
-        }
-        
-        if (sliceHeightOnCanvas <= 0 || sliceHeightOnPdf <= 0) {
-          break;
-        }
-        
-        const sliceCanvas = document.createElement('canvas');
-        sliceCanvas.width = canvasWidth;
-        sliceCanvas.height = sliceHeightOnCanvas;
-        
-        const sliceCtx = sliceCanvas.getContext('2d');
-        if (sliceCtx) {
-          sliceCtx.drawImage(
-            canvas,
-            0,
-            currentHeightOnCanvas,
-            canvasWidth,
-            sliceHeightOnCanvas,
-            0,
-            0,
-            canvasWidth,
-            sliceHeightOnCanvas
+        // 각 페이지별로 이미지의 일부분을 추가
+        for (let i = 0; i < pageCount; i++) {
+          if (i > 0) {
+            pdf.addPage();
+          }
+          
+          const srcY = i * (pdfHeight - (margin * 2)) * (canvas.width / imgWidth);
+          const srcHeight = (pdfHeight - (margin * 2)) * (canvas.width / imgWidth);
+          
+          // 페이지에 내용 추가
+          pdf.addImage(
+            imgData,
+            'PNG',
+            margin,
+            margin,
+            imgWidth,
+            imgHeight
           );
-          
-          const sliceImgData = sliceCanvas.toDataURL('image/png');
-          pdf.addImage(sliceImgData, 'PNG', pageMargin, pdfY, imgWidthOnPdf, sliceHeightOnPdf);
-          
-          currentHeightOnCanvas += sliceHeightOnCanvas;
+        }
+
+        // 현재 날짜로 파일명 생성
+        const today = new Date();
+        const dateStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+        const fileName = `심사의견서_${dateStr}.pdf`;
+        
+        // PDF 저장
+        pdf.save(fileName);
+        
+        // 알림 표시
+        alert('심사의견서가 PDF로 저장되었습니다.');
+      } catch (canvasError) {
+        console.error('Canvas 생성 오류:', canvasError);
+        throw new Error('PDF 변환 과정에서 오류가 발생했습니다.');
+      } finally {
+        // 복제된 폼 제거
+        if (document.body.contains(clonedForm)) {
+          document.body.removeChild(clonedForm);
         }
       }
-      
-      const dateStr = currentDate.replace(/[^0-9]/g, '');
-      const filename = `심사의견서_${dateStr || new Date().toISOString().split('T')[0]}.pdf`;
-      pdf.save(filename);
-      
     } catch (error) {
-      console.error("PDF 생성 중 오류 발생:", error);
-      alert("PDF 파일을 생성하는 중 오류가 발생했습니다.");
+      console.error('PDF 생성 오류:', error);
+      alert('PDF 생성 중 오류가 발생했습니다. 다시 시도해주세요.');
     } finally {
-      setIsPdfGenerating(false);
+      setIsGeneratingPDF(false);
     }
   };
   
   const handleExportCSV = () => {
     try {
+      setIsExportingCSV(true);
+      
+      // CSV 헤더 생성
       const headers = [
-        '작성일', '전체 심사평', '한글 부문', '한문 부문', '현대서예 부문', 
-        '캘리그라피 부문', '전각, 서각 부문', '문인화, 동양화, 민화 부문', 
-        '심사총평 및 제언', '심사위원장 서명'
+        '작성일', 
+        '심사위원장', 
+        '전체 심사평', 
+        '한글 부문', 
+        '한문 부문', 
+        '현대서예 부문', 
+        '캘리그래피 부문', 
+        '전각, 서각 부문', 
+        '문인화, 동양화, 민화 부문', 
+        '심사총평 및 제언'
       ];
       
-      const dataRow = [
+      // 데이터 생성
+      const data = [
         currentDate,
+        signatureName,
         overallOpinion,
         hangulOpinion,
         hanmunOpinion,
@@ -189,38 +224,52 @@ const FeedbackSection = () => {
         calligraphyOpinion,
         sealOpinion,
         paintingOpinion,
-        finalOpinion,
-        signatureName
-      ];
+        finalOpinion
+      ].map(text => `"${text?.replace(/"/g, '""') || ''}"`); // CSV 이스케이핑 처리
       
-      const csvContent = [
+      // CSV 파일 내용 생성
+      const BOM = '\uFEFF'; // Excel에서 UTF-8 인코딩을 올바르게 인식하기 위한 BOM 추가
+      const csvContent = BOM + [
         headers.join(','),
-        dataRow.map(item => `"${item.replace(/"/g, '""')}"`).join(',')
+        data.join(',')
       ].join('\n');
       
-      const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+      // 파일 다운로드
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
-      
       const link = document.createElement('a');
       link.setAttribute('href', url);
-      link.setAttribute('download', `심사의견서_${currentDate.replace(/[^0-9]/g, '')}.csv`);
-      link.style.visibility = 'hidden';
+      
+      // 현재 날짜로 파일명 생성
+      const today = new Date();
+      const dateStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+      link.setAttribute('download', `심사의견서_${dateStr}.csv`);
+      
+      // 링크 클릭하여 다운로드
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
       
+      // 임시 요소 제거 (타임아웃으로 지연 처리)
+      setTimeout(() => {
+        if (document.body.contains(link)) {
+          document.body.removeChild(link);
+        }
+        URL.revokeObjectURL(url);
+        setIsExportingCSV(false);
+        alert('심사의견을 CSV 파일로 내보냈습니다.');
+      }, 100);
     } catch (error) {
-      console.error("CSV 생성 오류:", error);
-      alert("CSV 파일을 생성하는 중 오류가 발생했습니다.");
+      console.error('CSV 내보내기 오류:', error);
+      setIsExportingCSV(false);
+      alert('CSV 파일을 생성하는 중 오류가 발생했습니다.');
     }
   };
 
   return (
-    <section className="calligraphy-section">
+    <section className="calligraphy-section" id="feedback-form" ref={formRef}>
       <h2 className="calligraphy-section-title">심사의견서</h2>
       
-      <div className={`asca-eval-form ${isPdfGenerating ? 'pdf-generating' : ''}`} ref={formRef} id="evaluation-opinion-form">
+      <div className={`asca-eval-form ${isGeneratingPDF ? 'pdf-generating' : ''}`} ref={formRef} id="evaluation-opinion-form">
         <div className="logo"></div>
         <div className="title">심사의견서</div>
 
@@ -392,18 +441,18 @@ const FeedbackSection = () => {
             <Button 
               id="opinion-form-download-pdf-button"
               onClick={handleDownloadPDF}
-              disabled={isPdfGenerating}
+              disabled={isGeneratingPDF}
               className="bg-[#28a745] hover:bg-[#218838]"
             >
-              PDF
+              {isGeneratingPDF ? 'PDF 생성 중...' : 'PDF 다운로드'}
             </Button> 
             <Button 
               id="opinion-form-export-csv-button"
               onClick={handleExportCSV}
-              disabled={isPdfGenerating}
+              disabled={isExportingCSV}
               className="bg-[#007bff] hover:bg-[#0056b3]"
             >
-              CSV
+              {isExportingCSV ? 'CSV 내보내는 중...' : 'CSV 내보내기'}
             </Button>
           </div>
         </div>
@@ -412,23 +461,26 @@ const FeedbackSection = () => {
       <style>
         {`
         .asca-eval-form {
-          width: 210mm;
+          width: 100%;
+          max-width: 100%;
           min-height: 297mm;
-          margin: 20px auto;
-          padding: 1.5cm 2cm;
+          margin: 0 auto;
+          padding: 1.5rem 2rem;
           line-height: 1.6;
-          color: var(--ink-black, #1a1a1a);
-          background-color: var(--rice-paper, #f5f5f0);
+          color: hsl(var(--foreground));
+          background-color: hsl(var(--background));
           box-shadow: 0 0 10px rgba(0,0,0,0.1);
           box-sizing: border-box;
           display: flex;
           flex-direction: column;
           font-family: 'Noto Serif TC', serif;
+          border-radius: var(--radius);
+          border: 1px solid hsl(var(--border));
         }
         
         .dark .asca-eval-form {
-          background-color: var(--card, #1e1e2e);
-          color: var(--foreground, #f5f5f5);
+          background-color: hsl(var(--card));
+          color: hsl(var(--card-foreground));
           box-shadow: 0 0 10px rgba(0,0,0,0.3);
         }
         
@@ -453,18 +505,22 @@ const FeedbackSection = () => {
           text-align: center;
           font-size: 24pt;
           font-weight: bold;
-          margin-bottom: 1.5cm;
-          color: var(--ink-black, #1a1a1a);
+          margin-bottom: 1.5rem;
+          color: hsl(var(--foreground));
         }
         
         .dark .asca-eval-form .title {
-          color: var(--foreground, #f5f5f5);
+          color: hsl(var(--foreground));
         }
         
         .asca-eval-form .form-section {
           margin-bottom: 1.5rem;
           padding-bottom: 1.5rem;
-          border-bottom: 1px solid var(--border, #eee);
+          border-bottom: 1px solid hsl(var(--border));
+        }
+        
+        .dark .asca-eval-form .form-section {
+          border-bottom: 1px solid hsl(var(--border));
         }
         
         .asca-eval-form .form-section:last-of-type {
@@ -476,14 +532,14 @@ const FeedbackSection = () => {
           font-size: 1.3rem;
           margin-bottom: 1rem;
           padding-bottom: 0.5rem;
-          border-bottom: 1px solid var(--border, #eee);
+          border-bottom: 1px solid hsl(var(--border));
           position: relative;
-          color: var(--terra-red, #9B4444);
+          color: hsl(var(--primary));
         }
         
         .dark .asca-eval-form .section-title {
-          color: var(--primary, #d16868);
-          border-bottom: 1px solid var(--border, #2d3a5e);
+          color: hsl(var(--primary));
+          border-bottom: 1px solid hsl(var(--border));
         }
         
         .asca-eval-form .section-title::after {
@@ -493,7 +549,7 @@ const FeedbackSection = () => {
           left: 0;
           width: 50px;
           height: 3px;
-          background-color: var(--celadon, #88A891);
+          background-color: hsl(var(--celadon));
         }
         
         .asca-eval-form .opinion-field {
@@ -504,30 +560,30 @@ const FeedbackSection = () => {
           font-weight: bold;
           margin-bottom: 0.5rem;
           font-size: 1rem;
-          color: var(--ink-black, #1a1a1a);
+          color: hsl(var(--foreground));
         }
         
         .dark .asca-eval-form .opinion-title {
-          color: var(--foreground, #f5f5f5);
+          color: hsl(var(--foreground));
         }
         
         .asca-eval-form .opinion-content {
-          border: 1px solid var(--border, #ccc);
-          border-radius: 4px;
+          border: 1px solid hsl(var(--border));
+          border-radius: var(--radius);
           padding: 0;
-          background-color: var(--background, #fff);
+          background-color: hsl(var(--card));
           overflow: hidden;
         }
         
         .dark .asca-eval-form .opinion-content {
-          border: 1px solid var(--border, #2d3a5e);
-          background-color: var(--card, #1e1e2e);
+          border: 1px solid hsl(var(--border));
+          background-color: hsl(var(--card));
         }
         
         .asca-eval-form textarea {
           min-height: 120px !important;
-          color: var(--foreground, #1a1a1a);
-          background-color: var(--background, #fff);
+          color: hsl(var(--card-foreground));
+          background-color: hsl(var(--card));
           border: none;
           border-radius: 0;
           resize: vertical;
@@ -537,8 +593,8 @@ const FeedbackSection = () => {
         }
         
         .dark .asca-eval-form textarea {
-          color: var(--foreground, #f5f5f5);
-          background-color: var(--card, #1e1e2e);
+          color: hsl(var(--card-foreground));
+          background-color: hsl(var(--card));
         }
         
         .asca-eval-form .categories-grid {
@@ -549,23 +605,23 @@ const FeedbackSection = () => {
         
         .asca-eval-form .signature-section {
           margin-top: auto;
-          padding-top: 1.5cm;
+          padding-top: 1.5rem;
           display: flex;
           justify-content: space-between;
           align-items: flex-end;
-          border-top: 1px solid var(--celadon, #88A891);
+          border-top: 1px solid hsl(var(--celadon));
         }
         
         .asca-eval-form .evaluation-date {
           font-size: 10pt;
-          color: var(--ink-black, #1a1a1a);
+          color: hsl(var(--foreground));
           margin: 0 0 5px 0;
           padding-bottom: 8px;
           white-space: nowrap;
         }
         
         .dark .asca-eval-form .evaluation-date {
-          color: var(--foreground, #f5f5f5);
+          color: hsl(var(--foreground));
         }
         
         .asca-eval-form .signature-line {
@@ -574,11 +630,11 @@ const FeedbackSection = () => {
           gap: 8px;
           flex-grow: 1;
           justify-content: flex-end;
-          color: var(--ink-black, #1a1a1a);
+          color: hsl(var(--foreground));
         }
         
         .dark .asca-eval-form .signature-line {
-          color: var(--foreground, #f5f5f5);
+          color: hsl(var(--foreground));
         }
         
         .asca-eval-form .signature-line label {
@@ -597,9 +653,9 @@ const FeedbackSection = () => {
           width: 100%;
           padding: 8px 0;
           border: none;
-          border-bottom: 1px solid var(--ink-black, #1a1a1a);
+          border-bottom: 1px solid hsl(var(--border));
           background-color: transparent;
-          color: var(--ink-black, #1a1a1a);
+          color: hsl(var(--foreground));
           border-radius: 0;
           font-family: inherit;
           font-size: inherit;
@@ -608,33 +664,33 @@ const FeedbackSection = () => {
         }
         
         .dark .asca-eval-form .signature-input {
-          border-bottom: 1px solid var(--foreground, #f5f5f5);
-          color: var(--foreground, #f5f5f5);
+          border-bottom: 1px solid hsl(var(--border));
+          color: hsl(var(--foreground));
         }
         
         .asca-eval-form .signature-label-text {
           font-size: 10pt;
-          color: var(--ink-black, #1a1a1a);
+          color: hsl(var(--foreground));
           white-space: nowrap;
           padding-bottom: 8px;
         }
         
         .dark .asca-eval-form .signature-label-text {
-          color: var(--foreground, #f5f5f5);
+          color: hsl(var(--foreground));
         }
         
         .asca-eval-form .button-container {
-          margin-top: 1cm;
-          padding-top: 0.5cm;
+          margin-top: 1rem;
+          padding-top: 0.5rem;
           display: flex;
           justify-content: space-between;
           align-items: center;
-          border-top: 1px solid var(--celadon, #88A891);
+          border-top: 1px solid hsl(var(--celadon));
         }
         
         .asca-eval-form .copyright-footer {
           font-size: 8pt;
-          color: var(--muted-foreground, #6c757d);
+          color: hsl(var(--muted-foreground));
           text-align: left;
           margin: 0;
           flex-grow: 1;
@@ -655,11 +711,13 @@ const FeedbackSection = () => {
           font-family: inherit;
           font-size: inherit;
           line-height: inherit;
-          color: var(--ink-black, #1a1a1a);
+          color: hsl(var(--foreground));
+          padding: 10px;
+          min-height: 120px;
         }
         
         .dark .asca-eval-form .print-content {
-          color: var(--foreground, #f5f5f5);
+          color: hsl(var(--foreground));
         }
         
         @media (max-width: 768px) {
@@ -671,7 +729,7 @@ const FeedbackSection = () => {
           
           .asca-eval-form .title {
             font-size: 20pt;
-            margin-bottom: 1cm;
+            margin-bottom: 1rem;
           }
           
           .asca-eval-form .categories-grid {

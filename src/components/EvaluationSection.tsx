@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import EvaluationHeader from '@/components/evaluation/EvaluationHeader';
 import EvaluationCriteriaTable from '@/components/evaluation/EvaluationCriteriaTable';
 import ScoreTable from '@/components/evaluation/ScoreTable';
@@ -8,6 +8,7 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
 const EvaluationSection = () => {
+  const formRef = useRef<HTMLElement>(null);
   const [seriesNumber, setSeriesNumber] = useState('');
   const [category, setCategory] = useState('');
   const [artistName, setArtistName] = useState('');
@@ -83,21 +84,17 @@ const EvaluationSection = () => {
       const form = formRef.current;
       form.classList.add('pdf-generating');
       
+      const buttonContainers = form.querySelectorAll('.button-container');
+      buttonContainers.forEach(el => (el as HTMLElement).style.display = 'none');
+      
       const canvas = await html2canvas(form, {
-        scale: 1.5,
+        scale: 2,
         useCORS: true,
         logging: false,
-        onclone: (clonedDoc) => {
-          clonedDoc.querySelectorAll('.button-container').forEach(
-            el => el.remove()
-          );
-          
-          clonedDoc.querySelectorAll('input, select').forEach(input => {
-            input.setAttribute('style', 'border: none; background-color: transparent; padding: 0; margin: 0;');
-            (input as HTMLInputElement).readOnly = true;
-          });
-        }
+        backgroundColor: '#ffffff'
       });
+      
+      buttonContainers.forEach(el => (el as HTMLElement).style.display = '');
       
       const pdf = new jsPDF({
         orientation: 'portrait',
@@ -116,15 +113,17 @@ const EvaluationSection = () => {
       
       const contentWidth = pdfWidth - (pageMargin * 2);
       const contentHeight = contentWidth / canvasAspectRatio;
-      pdf.addImage(imgData, 'PNG', pageMargin, pageMargin + 20, contentWidth, contentHeight);
+      pdf.addImage(imgData, 'PNG', pageMargin, pageMargin + 10, contentWidth, contentHeight);
       
-      const finalY = pdfHeight - pageMargin - 10;
-      pdf.text(`작성일: ${currentDate}`, pageMargin, finalY);
-      pdf.text(`심사위원장: ${judgeSignature || '_______________'} (서명)`, pdfWidth - pageMargin - 80, finalY);
+      const finalY = pdfHeight - pageMargin;
+      pdf.setFontSize(10);
+      pdf.text(`작성일: ${currentDate}`, pageMargin, finalY - 5);
+      pdf.text(`심사위원장: ${judgeSignature || '_______________'} (서명)`, pdfWidth - pageMargin - 80, finalY - 5);
       
       const filename = `심사표_${category || '전체'}_${artistName || '무제'}_${new Date().toISOString().split('T')[0]}.pdf`;
       pdf.save(filename);
       
+      alert('심사표가 PDF로 저장되었습니다.');
     } catch (error) {
       console.error("PDF 생성 오류:", error);
       alert("PDF 파일을 생성하는 중 오류가 발생했습니다.");
@@ -144,11 +143,11 @@ const EvaluationSection = () => {
       csvContent += `작품명:,${workTitle}\n\n`;
       
       csvContent += '평가 항목,배점,점수\n';
-      csvContent += `필획의 정확성과 유창성,40,${pointsScore || ''}\n`;
-      csvContent += `구조와 자간,25,${structureScore || ''}\n`;
-      csvContent += `구도와 여백,20,${compositionScore || ''}\n`;
-      csvContent += `조화와 창의성,15,${harmonyScore || ''}\n`;
-      csvContent += `총점,100,${totalScore || ''}\n\n`;
+      csvContent += `필획의 정확성과 유창성,40,${pointsScore || 0}\n`;
+      csvContent += `구조와 자간,25,${structureScore || 0}\n`;
+      csvContent += `구도와 여백,20,${compositionScore || 0}\n`;
+      csvContent += `조화와 창의성,15,${harmonyScore || 0}\n`;
+      csvContent += `총점,100,${totalScore}\n\n`;
       
       csvContent += `심사위원장:,${judgeSignature}`;
       
@@ -178,14 +177,14 @@ const EvaluationSection = () => {
         <button
           key={i}
           onClick={() => handleScoreClick(category, i)}
-          className={`w-8 h-8 flex items-center justify-center text-xs border border-gray-300 rounded-md hover:bg-[#C53030] hover:text-white hover:border-[#C53030] transition-colors 
+          className={`w-8 h-8 flex items-center justify-center text-xs border border-border rounded-md hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors 
             ${
               (category === 'points' && pointsScore === i) ||
               (category === 'structure' && structureScore === i) ||
               (category === 'composition' && compositionScore === i) ||
               (category === 'harmony' && harmonyScore === i)
-                ? 'bg-[#C53030] text-white border-[#C53030]'
-                : 'bg-white'
+                ? 'bg-primary text-primary-foreground border-primary'
+                : 'bg-card text-foreground'
             }`}
         >
           {i}
@@ -196,7 +195,7 @@ const EvaluationSection = () => {
   };
 
   return (
-    <section className="calligraphy-section" id="evaluation-score-form">
+    <section className="calligraphy-section" id="evaluation-score-form" ref={formRef}>
       <h2 className="calligraphy-section-title">심사표</h2>
       
       <EvaluationHeader 
