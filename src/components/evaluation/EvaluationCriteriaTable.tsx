@@ -6,8 +6,8 @@ const EvaluationCriteriaTable: React.FC = () => {
     <div className="criteria-section mb-6 border-b border-[#E4D7C5] pb-4">
       <h3 className="text-xl font-medium mb-2 text-[#1A1F2C] border-b border-[#C53030] pb-2 inline-block">심사기준</h3>
       <ol className="ml-5 pl-2 mb-4">
-        <li className="mb-1">옛 법첩 기준 작품을 선정하되 서체별 구성, 여백, 조화, 묵색에 중점을 두고 작품성의 우열을 결정한다.</li>
-        <li className="mb-1">점획ㆍ결구ㆍ장법ㆍ조화의 완성미를 심사하되 아래 표의 여러 요소들을 비교 심사한다.</li>
+        <li className="mb-1">옛 법첩 기준 작품을 선정하되 서체별 구성, 여백, 조화, 묵색에 중점을 두고 작품성의 우열을 결정합니다.</li>
+        <li className="mb-1">점획ㆍ결구ㆍ장법ㆍ조화의 완성미를 심사하되 아래 표의 여러 요소들을 비교 심사합니다.</li>
       </ol>
       
       <div className="overflow-x-auto">
