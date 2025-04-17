@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import CalligraphyHeader from '@/components/CalligraphyHeader';
 import NavigationMenu from '@/components/NavigationMenu';
