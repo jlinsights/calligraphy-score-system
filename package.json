@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "predeploy": "NODE_ENV=production npm run build",
     "deploy": "gh-pages -d dist --dotfiles",
-    "vercel-build": "NODE_ENV=production vite build"
+    "vercel-build": "NODE_ENV=production node ./node_modules/vite/bin/vite.js build"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
