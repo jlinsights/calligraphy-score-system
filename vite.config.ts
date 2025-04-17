@@ -4,78 +4,54 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 import fs from 'fs';
 
+// https://vitejs.dev/config/
 export default defineConfig({
   base: '/',
   build: {
     outDir: 'dist',
     emptyOutDir: true,
     assetsDir: 'assets',
-    target: 'esnext',
-    modulePreload: {
-      polyfill: false
-    },
+    target: 'es2015', // 더 넓은 브라우저 호환성
+    modulePreload: false, // 모듈 프리로드 비활성화
     minify: 'terser',
     terserOptions: {
       compress: {
-        drop_console: true,
+        drop_console: false, // 디버깅을 위해 콘솔 유지
         drop_debugger: true
       }
     },
-    chunkSizeWarningLimit: 800,
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, 'index.html')
       },
       output: {
-        manualChunks: (id) => {
-          // 주요 UI 프레임워크 분리
-          if (id.includes('node_modules/@radix-ui')) {
-            return 'vendor-radix';
-          }
-          // React 및 관련 라이브러리 분리
-          if (id.includes('node_modules/react') || 
-              id.includes('node_modules/react-dom') || 
-              id.includes('node_modules/@tanstack/react-query')) {
-            return 'vendor-react';
-          }
-          // 차트 및 PDF 관련 라이브러리
-          if (id.includes('node_modules/jspdf') || 
-              id.includes('node_modules/html2canvas') || 
-              id.includes('node_modules/recharts')) {
-            return 'vendor-charts-pdf';
-          }
-          // 유틸리티 라이브러리
-          if (id.includes('node_modules/date-fns') || 
-              id.includes('node_modules/clsx') || 
-              id.includes('node_modules/tailwind-merge') ||
-              id.includes('node_modules/class-variance-authority')) {
-            return 'vendor-utils';
-          }
-          // 다른 모든 node_modules
-          if (id.includes('node_modules')) {
-            return 'vendor-others';
-          }
-          // 컴포넌트 분리
-          if (id.includes('/components/')) {
-            // UI 컴포넌트
-            if (id.includes('/components/ui/')) {
-              return 'ui-components';
-            }
-            return 'components';
-          }
+        manualChunks: {
+          'vendor': [
+            'react', 
+            'react-dom',
+            'react-router-dom'
+          ],
+          'ui': [
+            '@radix-ui/react-toast',
+            '@radix-ui/react-tooltip',
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-tabs'
+          ]
         },
         // 파일명 규칙 설정
-        entryFileNames: 'assets/[name]-[hash].js',
-        chunkFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]'
+        entryFileNames: 'assets/[name].[hash].js',
+        chunkFileNames: 'assets/[name].[hash].js',
+        assetFileNames: 'assets/[name].[hash].[ext]'
       }
     },
-    // 소스맵 생성
+    // 소스맵 생성 (디버깅용)
     sourcemap: true
   },
   optimizeDeps: {
     exclude: ['lovable-tagger'],
-    include: ['react', 'react-dom']
+    include: ['react', 'react-dom', 'react-router-dom']
   },
   server: {
     host: "::",
@@ -93,6 +69,12 @@ export default defineConfig({
         if (fs.existsSync('CNAME')) {
           fs.copyFileSync('CNAME', 'dist/CNAME');
           console.log('CNAME file copied to dist directory');
+        }
+        
+        // 404.html 파일 생성 (GitHub Pages용)
+        if (!fs.existsSync('dist/404.html')) {
+          fs.copyFileSync('dist/index.html', 'dist/404.html');
+          console.log('404.html file created in dist directory');
         }
       }
     },

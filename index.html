@@ -18,10 +18,25 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@lovable_dev" />
     <meta name="twitter:image" content="https://imagedelivery.net/iELritu8tmGaSR8tZ-NWcg/561446ce-48df-41cf-c8d8-ac7427ed2600/Contain" />
+    
+    <!-- 기본 스타일 미리 로드 -->
+    <link rel="preload" href="/src/index.css" as="style">
+    <link rel="stylesheet" href="/src/index.css">
   </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- 초기 로딩 상태 표시 -->
+      <div style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+        <div style="border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 50px; height: 50px; animation: spin 2s linear infinite;"></div>
+      </div>
+      <style>
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      </style>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
