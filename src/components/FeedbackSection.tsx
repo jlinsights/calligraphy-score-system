@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -427,6 +426,12 @@ const FeedbackSection = () => {
           font-family: 'Noto Serif TC', serif;
         }
         
+        .dark .asca-eval-form {
+          background-color: var(--card, #1e1e2e);
+          color: var(--foreground, #f5f5f5);
+          box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+        
         .pdf-generating {
           cursor: progress;
         }
@@ -452,10 +457,14 @@ const FeedbackSection = () => {
           color: var(--ink-black, #1a1a1a);
         }
         
+        .dark .asca-eval-form .title {
+          color: var(--foreground, #f5f5f5);
+        }
+        
         .asca-eval-form .form-section {
           margin-bottom: 1.5rem;
           padding-bottom: 1.5rem;
-          border-bottom: 1px solid var(--border-color-light, #eee);
+          border-bottom: 1px solid var(--border, #eee);
         }
         
         .asca-eval-form .form-section:last-of-type {
@@ -467,9 +476,14 @@ const FeedbackSection = () => {
           font-size: 1.3rem;
           margin-bottom: 1rem;
           padding-bottom: 0.5rem;
-          border-bottom: 1px solid var(--border-color-light, #eee);
+          border-bottom: 1px solid var(--border, #eee);
           position: relative;
           color: var(--terra-red, #9B4444);
+        }
+        
+        .dark .asca-eval-form .section-title {
+          color: var(--primary, #d16868);
+          border-bottom: 1px solid var(--border, #2d3a5e);
         }
         
         .asca-eval-form .section-title::after {
@@ -490,14 +504,41 @@ const FeedbackSection = () => {
           font-weight: bold;
           margin-bottom: 0.5rem;
           font-size: 1rem;
+          color: var(--ink-black, #1a1a1a);
+        }
+        
+        .dark .asca-eval-form .opinion-title {
+          color: var(--foreground, #f5f5f5);
         }
         
         .asca-eval-form .opinion-content {
-          border: 1px solid var(--border-color, #ccc);
+          border: 1px solid var(--border, #ccc);
           border-radius: 4px;
           padding: 0;
-          background-color: #fff;
+          background-color: var(--background, #fff);
           overflow: hidden;
+        }
+        
+        .dark .asca-eval-form .opinion-content {
+          border: 1px solid var(--border, #2d3a5e);
+          background-color: var(--card, #1e1e2e);
+        }
+        
+        .asca-eval-form textarea {
+          min-height: 120px !important;
+          color: var(--foreground, #1a1a1a);
+          background-color: var(--background, #fff);
+          border: none;
+          border-radius: 0;
+          resize: vertical;
+          width: 100%;
+          padding: 10px;
+          font-family: inherit;
+        }
+        
+        .dark .asca-eval-form textarea {
+          color: var(--foreground, #f5f5f5);
+          background-color: var(--card, #1e1e2e);
         }
         
         .asca-eval-form .categories-grid {
@@ -523,12 +564,21 @@ const FeedbackSection = () => {
           white-space: nowrap;
         }
         
+        .dark .asca-eval-form .evaluation-date {
+          color: var(--foreground, #f5f5f5);
+        }
+        
         .asca-eval-form .signature-line {
           display: flex;
           align-items: baseline;
           gap: 8px;
           flex-grow: 1;
           justify-content: flex-end;
+          color: var(--ink-black, #1a1a1a);
+        }
+        
+        .dark .asca-eval-form .signature-line {
+          color: var(--foreground, #f5f5f5);
         }
         
         .asca-eval-form .signature-line label {
@@ -557,11 +607,20 @@ const FeedbackSection = () => {
           height: auto;
         }
         
+        .dark .asca-eval-form .signature-input {
+          border-bottom: 1px solid var(--foreground, #f5f5f5);
+          color: var(--foreground, #f5f5f5);
+        }
+        
         .asca-eval-form .signature-label-text {
           font-size: 10pt;
           color: var(--ink-black, #1a1a1a);
           white-space: nowrap;
           padding-bottom: 8px;
+        }
+        
+        .dark .asca-eval-form .signature-label-text {
+          color: var(--foreground, #f5f5f5);
         }
         
         .asca-eval-form .button-container {
@@ -575,7 +634,7 @@ const FeedbackSection = () => {
         
         .asca-eval-form .copyright-footer {
           font-size: 8pt;
-          color: var(--footer-text-color, #6c757d);
+          color: var(--muted-foreground, #6c757d);
           text-align: left;
           margin: 0;
           flex-grow: 1;
@@ -597,6 +656,10 @@ const FeedbackSection = () => {
           font-size: inherit;
           line-height: inherit;
           color: var(--ink-black, #1a1a1a);
+        }
+        
+        .dark .asca-eval-form .print-content {
+          color: var(--foreground, #f5f5f5);
         }
         
         @media (max-width: 768px) {
