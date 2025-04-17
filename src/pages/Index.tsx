@@ -1,4 +1,4 @@
-import React, { useState, lazy, Suspense } from 'react';
+import React, { useState, lazy, Suspense, useEffect } from 'react';
 import CalligraphyHeader from '@/components/CalligraphyHeader';
 import NavigationMenu from '@/components/NavigationMenu';
 
@@ -17,20 +17,48 @@ const LoadingComponent = () => (
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState('schedule');
+  const [mounted, setMounted] = useState(false);
+
+  // 컴포넌트가 마운트된 후에만 렌더링을 시작하도록 설정
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Render the appropriate section based on activeSection
   const renderActiveSection = () => {
+    if (!mounted) return <LoadingComponent />;
+    
     switch (activeSection) {
       case 'schedule':
-        return <ScheduleSection />;
+        return (
+          <Suspense fallback={<LoadingComponent />}>
+            <ScheduleSection />
+          </Suspense>
+        );
       case 'evaluation':
-        return <EvaluationSection />;
+        return (
+          <Suspense fallback={<LoadingComponent />}>
+            <EvaluationSection />
+          </Suspense>
+        );
       case 'feedback':
-        return <FeedbackSection />;
+        return (
+          <Suspense fallback={<LoadingComponent />}>
+            <FeedbackSection />
+          </Suspense>
+        );
       case 'results':
-        return <ResultsSection />;
+        return (
+          <Suspense fallback={<LoadingComponent />}>
+            <ResultsSection />
+          </Suspense>
+        );
       default:
-        return <ScheduleSection />;
+        return (
+          <Suspense fallback={<LoadingComponent />}>
+            <ScheduleSection />
+          </Suspense>
+        );
     }
   };
 
@@ -44,9 +72,7 @@ const Index = () => {
           setActiveSection={setActiveSection} 
         />
         
-        <Suspense fallback={<LoadingComponent />}>
-          {renderActiveSection()}
-        </Suspense>
+        {renderActiveSection()}
         
         <footer className="mt-12 text-center text-sm text-muted-foreground">
           <p>© 2025 The Asian Society of Calligraphic Arts (ASCA)</p>
