@@ -69,17 +69,23 @@ export default defineConfig({
         chunkFileNames: 'assets/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash].[ext]'
       }
-    }
+    },
+    // 소스맵 생성
+    sourcemap: true
   },
   optimizeDeps: {
-    exclude: ['lovable-tagger']
+    exclude: ['lovable-tagger'],
+    include: ['react', 'react-dom']
   },
   server: {
     host: "::",
     port: 8082,
   },
   plugins: [
-    react() as PluginOption,
+    react({
+      jsxImportSource: undefined,
+      tsDecorators: true,
+    }) as PluginOption,
     {
       name: 'copy-cname',
       closeBundle() {
@@ -88,6 +94,13 @@ export default defineConfig({
           fs.copyFileSync('CNAME', 'dist/CNAME');
           console.log('CNAME file copied to dist directory');
         }
+      }
+    },
+    {
+      name: 'html-transform',
+      transformIndexHtml(html) {
+        // 필요한 경우 추가 HTML 변환 수행
+        return html;
       }
     }
   ] as PluginOption[],
