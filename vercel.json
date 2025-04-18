@@ -41,5 +41,8 @@
   ],
   "github": {
     "silent": true
+  },
+  "buildEnvironmentVariables": {
+    "VITE_DISABLE_MODULEPRELOAD_POLYFILL": "true"
   }
 } 

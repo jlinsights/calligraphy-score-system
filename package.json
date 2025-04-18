@@ -4,13 +4,16 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "dev": "vite",
-    "build": "node ./node_modules/vite/bin/vite.js build",
+    "build": "VITE_DISABLE_MODULEPRELOAD_POLYFILL=true node ./node_modules/vite/bin/vite.js build",
     "preview": "vite preview",
     "predeploy": "NODE_ENV=production node ./node_modules/vite/bin/vite.js build",
     "deploy": "node ./node_modules/gh-pages/bin/gh-pages.js -d dist --dotfiles",
-    "vercel-build": "npm run build"
+    "vercel-build": "VITE_DISABLE_MODULEPRELOAD_POLYFILL=true npm run build"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

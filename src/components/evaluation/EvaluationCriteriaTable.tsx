@@ -55,6 +55,20 @@ const EvaluationCriteriaTable: React.FC = () => {
           </table>
         </div>
       </div>
+
+      <table className="w-full border-collapse border border-border">
+        <tbody>
+          <tr>
+            <th className="border border-border p-1 sm:p-2 text-center bg-muted w-[100px] text-xs sm:text-sm">등급 기준</th>
+            <td className="border border-border p-1 sm:p-2 text-left pl-4 text-xs sm:text-sm">
+              A 등급: 90점 이상<br/> 
+              B 등급: 80점 이상<br/> 
+              C 등급: 70점 이상<br/> 
+              D 등급: 70점 미만
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -6,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FileDown, Save, Plus, X } from 'lucide-react';
+import SectionFooter from "@/components/ui/section-footer";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
@@ -303,32 +303,32 @@ const ResultsSection = () => {
     <section className="calligraphy-section" ref={formRef}>
       <h2 className="calligraphy-section-title">심사결과종합표</h2>
       
-      <div className="form-header mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="form-header mb-4 sm:mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div>
-            <Label htmlFor="eval-date" className="block text-sm font-medium text-gray-700 mb-1">심사 일시</Label>
+            <Label htmlFor="eval-date" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">심사 일시</Label>
             <Input 
               id="eval-date"
               type="date"
               value={evaluationDate}
               onChange={(e) => setEvaluationDate(e.target.value)}
-              className="w-full"
+              className="w-full h-8 sm:h-10 text-xs sm:text-sm"
             />
           </div>
           
           <div>
-            <Label htmlFor="eval-category" className="block text-sm font-medium text-gray-700 mb-1">심사 부문</Label>
+            <Label htmlFor="eval-category" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">심사 부문</Label>
             <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger id="eval-category">
+              <SelectTrigger id="eval-category" className="h-8 sm:h-10 text-xs sm:text-sm">
                 <SelectValue placeholder="부문 선택..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="한글서예">한글서예</SelectItem>
-                <SelectItem value="한문서예">한문서예</SelectItem>
-                <SelectItem value="현대서예">현대서예</SelectItem>
-                <SelectItem value="캘리그라피">캘리그라피</SelectItem>
-                <SelectItem value="전각・서각">전각・서각</SelectItem>
-                <SelectItem value="문인화・동양화・민화">문인화・동양화・민화</SelectItem>
+                <SelectItem value="한글서예" className="text-xs sm:text-sm">한글서예</SelectItem>
+                <SelectItem value="한문서예" className="text-xs sm:text-sm">한문서예</SelectItem>
+                <SelectItem value="현대서예" className="text-xs sm:text-sm">현대서예</SelectItem>
+                <SelectItem value="캘리그라피" className="text-xs sm:text-sm">캘리그라피</SelectItem>
+                <SelectItem value="전각・서각" className="text-xs sm:text-sm">전각・서각</SelectItem>
+                <SelectItem value="문인화・동양화・민화" className="text-xs sm:text-sm">문인화・동양화・민화</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -339,27 +339,27 @@ const ResultsSection = () => {
         <Button 
           onClick={addRow} 
           size="sm" 
-          className="bg-[#6c757d] hover:bg-[#5a6268] text-white"
+          className="bg-[#6c757d] hover:bg-[#5a6268] text-white text-xs sm:text-sm h-7 sm:h-9"
         >
-          <Plus className="w-4 h-4 mr-1" /> 행 추가
+          <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /> 행 추가
         </Button>
       </div>
 
       <div className="overflow-x-auto mb-6 border-b border-[#E4D7C5] pb-4">
-        <Table className="w-full border border-gray-300">
+        <Table className="w-full border border-gray-300 table-fixed">
           <TableHeader>
             <TableRow className="bg-[#f8f9fa]">
-              <TableHead className="w-[5%] text-center border border-gray-300">번호</TableHead>
-              <TableHead className="w-[15%] text-left border border-gray-300">작가</TableHead>
-              <TableHead className="w-[18%] text-left border border-gray-300">작품명</TableHead>
-              <TableHead className="w-[8%] text-center border border-gray-300">심사1</TableHead>
-              <TableHead className="w-[8%] text-center border border-gray-300">심사2</TableHead>
-              <TableHead className="w-[8%] text-center border border-gray-300">심사3</TableHead>
-              <TableHead className="w-[8%] text-center border border-gray-300">평균</TableHead>
-              <TableHead className="w-[6%] text-center border border-gray-300">순위</TableHead>
-              <TableHead className="w-[7%] text-center border border-gray-300">등급</TableHead>
-              <TableHead className="w-[12%] text-left border border-gray-300">비고</TableHead>
-              <TableHead className="w-[5%] text-center border border-gray-300">삭제</TableHead>
+              <TableHead className="w-[40px] text-center border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">번호</TableHead>
+              <TableHead className="w-[80px] sm:w-[15%] text-left border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">작가</TableHead>
+              <TableHead className="w-[100px] sm:w-[18%] text-left border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">작품명</TableHead>
+              <TableHead className="w-[50px] sm:w-[8%] text-center border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">심사1</TableHead>
+              <TableHead className="w-[50px] sm:w-[8%] text-center border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">심사2</TableHead>
+              <TableHead className="w-[50px] sm:w-[8%] text-center border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">심사3</TableHead>
+              <TableHead className="w-[50px] sm:w-[8%] text-center border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">평균</TableHead>
+              <TableHead className="w-[40px] sm:w-[6%] text-center border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">순위</TableHead>
+              <TableHead className="w-[40px] sm:w-[7%] text-center border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">등급</TableHead>
+              <TableHead className="w-[80px] sm:w-[12%] text-left border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">비고</TableHead>
+              <TableHead className="w-[40px] sm:w-[5%] text-center border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">삭제</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -368,75 +368,75 @@ const ResultsSection = () => {
                 key={row.rowId} 
                 className={getGradeClass(row.grade)}
               >
-                <TableCell className="text-center font-medium border border-gray-300">
+                <TableCell className="text-center font-medium border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">
                   {row.displayId}
                 </TableCell>
-                <TableCell className="border border-gray-300">
+                <TableCell className="border border-gray-300 p-0 sm:p-1">
                   <Input 
                     value={row.artist}
                     onChange={(e) => handleInputChange(row.rowId, 'artist', e.target.value)}
-                    className="w-full p-1 text-sm"
+                    className="w-full p-1 text-xs sm:text-sm border-0 h-7 sm:h-8"
                   />
                 </TableCell>
-                <TableCell className="border border-gray-300">
+                <TableCell className="border border-gray-300 p-0 sm:p-1">
                   <Input 
                     value={row.title}
                     onChange={(e) => handleInputChange(row.rowId, 'title', e.target.value)}
-                    className="w-full p-1 text-sm"
+                    className="w-full p-1 text-xs sm:text-sm border-0 h-7 sm:h-8"
                   />
                 </TableCell>
-                <TableCell className="border border-gray-300">
+                <TableCell className="border border-gray-300 p-0 sm:p-1">
                   <Input 
                     type="number"
                     min="0"
                     max="100"
                     value={row.score1}
                     onChange={(e) => handleInputChange(row.rowId, 'score1', e.target.value)}
-                    className="w-full p-1 text-center text-sm"
+                    className="w-full p-1 text-center text-xs sm:text-sm border-0 h-7 sm:h-8"
                   />
                 </TableCell>
-                <TableCell className="border border-gray-300">
+                <TableCell className="border border-gray-300 p-0 sm:p-1">
                   <Input 
                     type="number"
                     min="0"
                     max="100"
                     value={row.score2}
                     onChange={(e) => handleInputChange(row.rowId, 'score2', e.target.value)}
-                    className="w-full p-1 text-center text-sm"
+                    className="w-full p-1 text-center text-xs sm:text-sm border-0 h-7 sm:h-8"
                   />
                 </TableCell>
-                <TableCell className="border border-gray-300">
+                <TableCell className="border border-gray-300 p-0 sm:p-1">
                   <Input 
                     type="number"
                     min="0"
                     max="100"
                     value={row.score3}
                     onChange={(e) => handleInputChange(row.rowId, 'score3', e.target.value)}
-                    className="w-full p-1 text-center text-sm"
+                    className="w-full p-1 text-center text-xs sm:text-sm border-0 h-7 sm:h-8"
                   />
                 </TableCell>
-                <TableCell className="text-center font-medium border border-gray-300">
+                <TableCell className="text-center font-medium border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">
                   {row.average !== null ? row.average : ''}
                 </TableCell>
-                <TableCell className="text-center font-medium border border-gray-300">
+                <TableCell className="text-center font-medium border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">
                   {row.rank !== null ? row.rank : ''}
                 </TableCell>
-                <TableCell className="text-center font-medium border border-gray-300">
+                <TableCell className="text-center font-medium border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">
                   {row.grade}
                 </TableCell>
-                <TableCell className="border border-gray-300">
+                <TableCell className="border border-gray-300 p-0 sm:p-1">
                   <Input 
                     value={row.remarks}
                     onChange={(e) => handleInputChange(row.rowId, 'remarks', e.target.value)}
-                    className="w-full p-1 text-sm"
+                    className="w-full p-1 text-xs sm:text-sm border-0 h-7 sm:h-8"
                   />
                 </TableCell>
-                <TableCell className="text-center border border-gray-300">
+                <TableCell className="text-center border border-gray-300 p-0 sm:p-1">
                   <Button 
                     onClick={() => deleteRow(row.rowId)} 
                     variant="ghost" 
-                    size="sm" 
-                    className="p-1 h-auto text-[#C53030] hover:text-[#9B4444] hover:bg-gray-100"
+                    size="icon" 
+                    className="h-6 w-6 text-[#C53030] hover:text-[#9B4444] hover:bg-gray-100"
                   >
                     <X className="w-4 h-4" />
                   </Button>
@@ -448,29 +448,29 @@ const ResultsSection = () => {
       </div>
 
       <div className="mb-6 border-b border-[#E4D7C5] pb-4">
-        <h3 className="text-xl font-medium mb-2 text-[#1A1F2C] border-b border-[#C53030] pb-2 inline-block">수상 등급별 분포</h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="p-3 border border-gray-300 rounded-md text-center bg-[rgba(144,238,144,0.3)]">
-            <div className="text-sm text-gray-500 mb-1">A등급 (90점 이상)</div>
-            <div className="text-xl font-bold text-[#28a745]">
+        <h3 className="text-lg sm:text-xl font-medium mb-2 text-[#1A1F2C] border-b border-[#C53030] pb-2 inline-block">수상 등급별 분포</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
+          <div className="p-2 sm:p-3 border border-gray-300 rounded-md text-center bg-[rgba(144,238,144,0.3)]">
+            <div className="text-xs sm:text-sm text-gray-500 mb-1">A등급 (90점 이상)</div>
+            <div className="text-lg sm:text-xl font-bold text-[#28a745]">
               {resultsData.filter(r => r.grade === 'A').length}명
             </div>
           </div>
-          <div className="p-3 border border-gray-300 rounded-md text-center bg-[rgba(135,206,250,0.3)]">
-            <div className="text-sm text-gray-500 mb-1">B등급 (80-89점)</div>
-            <div className="text-xl font-bold text-[#007bff]">
+          <div className="p-2 sm:p-3 border border-gray-300 rounded-md text-center bg-[rgba(135,206,250,0.3)]">
+            <div className="text-xs sm:text-sm text-gray-500 mb-1">B등급 (80-89점)</div>
+            <div className="text-lg sm:text-xl font-bold text-[#007bff]">
               {resultsData.filter(r => r.grade === 'B').length}명
             </div>
           </div>
-          <div className="p-3 border border-gray-300 rounded-md text-center bg-[rgba(255,255,224,0.3)]">
-            <div className="text-sm text-gray-500 mb-1">C등급 (70-79점)</div>
-            <div className="text-xl font-bold text-[#f08c00]">
+          <div className="p-2 sm:p-3 border border-gray-300 rounded-md text-center bg-[rgba(255,255,224,0.3)]">
+            <div className="text-xs sm:text-sm text-gray-500 mb-1">C등급 (70-79점)</div>
+            <div className="text-lg sm:text-xl font-bold text-[#f08c00]">
               {resultsData.filter(r => r.grade === 'C').length}명
             </div>
           </div>
-          <div className="p-3 border border-gray-300 rounded-md text-center bg-[rgba(255,192,203,0.3)]">
-            <div className="text-sm text-gray-500 mb-1">D등급 (69점 이하)</div>
-            <div className="text-xl font-bold text-[#6c757d]">
+          <div className="p-2 sm:p-3 border border-gray-300 rounded-md text-center bg-[rgba(255,192,203,0.3)]">
+            <div className="text-xs sm:text-sm text-gray-500 mb-1">D등급 (69점 이하)</div>
+            <div className="text-lg sm:text-xl font-bold text-[#6c757d]">
               {resultsData.filter(r => r.grade === 'D').length}명
             </div>
           </div>
@@ -478,11 +478,11 @@ const ResultsSection = () => {
       </div>
 
       <div className="form-section mb-6 border-b border-[#E4D7C5] pb-4">
-        <h3 className="text-xl font-medium mb-2 text-[#1A1F2C] border-b border-[#C53030] pb-2 inline-block">등급결정 및 동점자 처리</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <h3 className="text-lg sm:text-xl font-medium mb-2 text-[#1A1F2C] border-b border-[#C53030] pb-2 inline-block">등급결정 및 동점자 처리</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           <div>
-            <h4 className="font-medium mb-2">등급결정 기준</h4>
-            <ul className="list-disc pl-5 space-y-1 text-sm">
+            <h4 className="font-medium mb-1 sm:mb-2 text-sm sm:text-base">등급결정 기준</h4>
+            <ul className="list-disc pl-4 sm:pl-5 space-y-0.5 sm:space-y-1 text-xs sm:text-sm">
               <li>90점 이상: 대상 및 최우수상 후보</li>
               <li>85점 이상: 우수상 후보</li>
               <li>80점 이상: 특선 후보</li>
@@ -490,8 +490,8 @@ const ResultsSection = () => {
             </ul>
           </div>
           <div>
-            <h4 className="font-medium mb-2">동점자 발생시 처리방안</h4>
-            <ul className="list-disc pl-5 space-y-1 text-sm">
+            <h4 className="font-medium mb-1 sm:mb-2 text-sm sm:text-base">동점자 발생시 처리방안</h4>
+            <ul className="list-disc pl-4 sm:pl-5 space-y-0.5 sm:space-y-1 text-xs sm:text-sm">
               <li>조화(調和) 점수가 높은 작품우선</li>
               <li>장법(章法) 점수가 높은 작품우선</li>
               <li>심사위원 간 협의를 통한 결정</li>
@@ -501,49 +501,23 @@ const ResultsSection = () => {
       </div>
 
       <div className="form-section mb-6 border-b border-[#E4D7C5] pb-4">
-        <h3 className="text-xl font-medium mb-2 text-[#1A1F2C] border-b border-[#C53030] pb-2 inline-block">심사결과 확정</h3>
-        <ol className="list-decimal pl-5 space-y-1 text-sm">
+        <h3 className="text-lg sm:text-xl font-medium mb-2 text-[#1A1F2C] border-b border-[#C53030] pb-2 inline-block">심사결과 확정</h3>
+        <ol className="list-decimal pl-4 sm:pl-5 space-y-0.5 sm:space-y-1 text-xs sm:text-sm">
           <li>심사위원장은 종합심사 결과를 이사장에게 보고한다.</li>
           <li>이사회는 심사결과를 검토하고 최종 승인한다.</li>
           <li>확정된 심사결과는 수상자에게 개별 통보하며, 협회 홈페이지에 게시한다.</li>
         </ol>
       </div>
 
-      <div className="signature-section border-t border-[#C53030] pt-10 flex justify-between items-end">
-        <p className="text-sm text-[#1A1F2C] m-0 pb-2">작성일: {currentDate}</p>
-        <div className="flex items-baseline gap-2">
-          <Label htmlFor="judge-signature" className="font-bold whitespace-nowrap">심사위원장:</Label>
-          <div className="w-[250px] relative">
-            <Input 
-              id="judge-signature"
-              value={judgeSignature}
-              onChange={(e) => setJudgeSignature(e.target.value)}
-              className="border-0 border-b border-[#1A1F2C] rounded-none bg-transparent px-0 py-2"
-            />
-          </div>
-          <span className="text-sm text-[#1A1F2C] whitespace-nowrap pb-2">(서명)</span>
-        </div>
-      </div>
-
-      <div className="button-container border-t border-[#C53030] pt-6 mt-10 flex justify-between items-center">
-        <p className="text-xs text-[#8E9196] m-0">© The Asian Society of Calligraphic Arts (ASCA). All rights reserved.</p>
-        <div className="flex gap-2">
-          <Button 
-            onClick={handlePdfDownload}
-            className="bg-[#28a745] hover:bg-[#218838]"
-          >
-            <FileDown className="w-4 h-4 mr-1" />
-            PDF 다운로드
-          </Button>
-          <Button 
-            onClick={handleExportCsv}
-            className="bg-[#007bff] hover:bg-[#0056b3]"
-          >
-            <Save className="w-4 h-4 mr-1" />
-            CSV 내보내기
-          </Button>
-        </div>
-      </div>
+      <SectionFooter
+        currentDate={currentDate}
+        signature={judgeSignature}
+        setSignature={setJudgeSignature}
+        signatureLabel="심사위원"
+        handlePdfDownload={handlePdfDownload}
+        handleCsvExport={handleExportCsv}
+        isPdfGenerating={isGeneratingPdf.current}
+      />
     </section>
   );
 };

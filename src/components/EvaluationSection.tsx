@@ -3,7 +3,7 @@ import EvaluationHeader from '@/components/evaluation/EvaluationHeader';
 import EvaluationCriteriaTable from '@/components/evaluation/EvaluationCriteriaTable';
 import ScoreTable from '@/components/evaluation/ScoreTable';
 import GradingGuidelines from '@/components/schedule/GradingGuidelines';
-import FormFooter from '@/components/schedule/FormFooter';
+import SectionFooter from "@/components/ui/section-footer";
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
@@ -222,10 +222,10 @@ const EvaluationSection = () => {
 
       <GradingGuidelines />
 
-      <FormFooter
+      <SectionFooter
         currentDate={currentDate}
-        judgeSignature={judgeSignature}
-        setJudgeSignature={setJudgeSignature}
+        signature={judgeSignature}
+        setSignature={setJudgeSignature}
         handlePdfDownload={handlePdfDownload}
         handleCsvExport={handleCsvExport}
       />

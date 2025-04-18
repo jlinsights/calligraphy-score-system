@@ -1,22 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { useTheme } from '@/components/ThemeProvider';
 
+// 로고 이미지를 직접 import
+import logoLightImage from '/public/logo-light.png';
+import logoBlackImage from '/public/logo-black.png';
+
 const CalligraphyHeader = () => {
   const { theme } = useTheme();
   const [logoSrc, setLogoSrc] = useState<string>('');
 
   // 테마 변경 시 로고 이미지 소스 업데이트
   useEffect(() => {
-    // Vite에서 정적 이미지 처리
-    const baseUrl = import.meta.env.BASE_URL || '';
-    const lightLogo = `${baseUrl}logo-light.png`;
-    const darkLogo = `${baseUrl}logo-black.png`;
-    
-    setLogoSrc(theme === 'dark' ? lightLogo : darkLogo);
+    // Vite에서 정적 이미지 처리 - import한 이미지 사용
+    setLogoSrc(theme === 'dark' ? logoLightImage : logoBlackImage);
     
     // 디버깅용 로그
     console.log('현재 테마:', theme);
-    console.log('로고 경로:', theme === 'dark' ? lightLogo : darkLogo);
+    console.log('로고 경로:', theme === 'dark' ? logoLightImage : logoBlackImage);
   }, [theme]);
 
   return (
@@ -35,8 +35,8 @@ const CalligraphyHeader = () => {
             className="w-24 md:w-28 h-auto"
             onError={(e) => {
               console.error('로고 이미지 로딩 오류:', e);
-              // 에러 발생시 대체 이미지 표시
-              e.currentTarget.src = `${import.meta.env.BASE_URL || ''}placeholder.svg`;
+              // 에러 발생시 기본 이미지 경로 설정
+              e.currentTarget.src = '/placeholder.svg';
             }}
           />
         )}

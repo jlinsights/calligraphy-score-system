@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import PlanForm from './schedule/PlanForm';
 import EvaluationCriteria from './schedule/EvaluationCriteria';
 import GradingGuidelines from './schedule/GradingGuidelines';
-import FormFooter from './schedule/FormFooter';
+import SectionFooter from "@/components/ui/section-footer";
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
@@ -150,10 +150,10 @@ const ScheduleSection = () => {
       
       <GradingGuidelines />
       
-      <FormFooter
+      <SectionFooter
         currentDate={currentDate}
-        judgeSignature={judgeSignature}
-        setJudgeSignature={setJudgeSignature}
+        signature={judgeSignature}
+        setSignature={setJudgeSignature}
         handlePdfDownload={handlePdfDownload}
         handleCsvExport={handleCsvExport}
       />
