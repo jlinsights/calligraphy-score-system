@@ -15,6 +15,7 @@ export default defineConfig({
     },
     sourcemap: false,
     minify: 'terser',
+    assetsDir: 'assets',
     rollupOptions: {
       output: {
         manualChunks: {
@@ -22,7 +23,27 @@ export default defineConfig({
             'react', 
             'react-dom',
             'react-router-dom'
+          ],
+          'ui': [
+            '@radix-ui/react-accordion',
+            '@radix-ui/react-alert-dialog',
+            '@radix-ui/react-avatar',
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-label',
+            '@radix-ui/react-select',
+            '@radix-ui/react-slot',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-toast'
           ]
+        },
+        assetFileNames: (assetInfo) => {
+          const info = assetInfo.name || '';
+          const extType = info.split('.').at(1) || '';
+          if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(extType)) {
+            return `assets/images/[name][extname]`;
+          }
+          return `assets/[name][extname]`;
         }
       }
     }

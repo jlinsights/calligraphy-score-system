@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useTheme } from '@/components/ThemeProvider';
 
 // 로고 이미지를 직접 import
-import logoLightImage from '/public/logo-light.png';
-import logoBlackImage from '/public/logo-black.png';
+import logoLightImage from '/logo-light.png';
+import logoBlackImage from '/logo-black.png';
 
 const CalligraphyHeader = () => {
   const { theme } = useTheme();
@@ -13,10 +13,6 @@ const CalligraphyHeader = () => {
   useEffect(() => {
     // Vite에서 정적 이미지 처리 - import한 이미지 사용
     setLogoSrc(theme === 'dark' ? logoLightImage : logoBlackImage);
-    
-    // 디버깅용 로그
-    console.log('현재 테마:', theme);
-    console.log('로고 경로:', theme === 'dark' ? logoLightImage : logoBlackImage);
   }, [theme]);
 
   return (
