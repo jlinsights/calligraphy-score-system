@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import './FeedbackSection.css';
+import { FileDown, Save } from 'lucide-react';
+import SectionFooter from "@/components/ui/section-footer";
 
 const FeedbackSection: React.FC = () => {
   const [currentDate, setCurrentDate] = useState('');
@@ -210,8 +212,30 @@ const FeedbackSection: React.FC = () => {
         '캘리그래피 부문', 
         '전각, 서각 부문', 
         '문인화, 동양화, 민화 부문', 
-        '심사총평 및 제언'
+        '심사총평 및 제언',
+        '등급결정 기준',
+        '동점자 처리방안',
+        '심사결과 확정'
       ];
+      
+      // 등급결정 기준 데이터
+      const gradingCriteria = 
+        '90점 이상: 대상 및 최우수상 후보, ' +
+        '85점 이상: 우수상 후보, ' +
+        '80점 이상: 특선 후보, ' +
+        '75점 이상: 입선 후보';
+      
+      // 동점자 처리 데이터
+      const tiebreakCriteria = 
+        '조화(調和) 점수가 높은 작품우선, ' +
+        '장법(章法) 점수가 높은 작품우선, ' +
+        '심사위원 간 협의를 통한 결정';
+      
+      // 심사결과 확정 데이터
+      const resultConfirmation = 
+        '1. 심사위원장은 종합심사 결과를 이사장에게 전달합니다. ' +
+        '2. 이사회는 심사결과를 검토하고 최종 승인합니다. ' +
+        '3. 확정된 심사결과는 수상자에게 개별 통보하며, 협회 홈페이지에 게시합니다.';
       
       // 데이터 생성
       const data = [
@@ -224,7 +248,10 @@ const FeedbackSection: React.FC = () => {
         calligraphyOpinion,
         sealOpinion,
         paintingOpinion,
-        finalOpinion
+        finalOpinion,
+        gradingCriteria,
+        tiebreakCriteria,
+        resultConfirmation
       ].map(text => `"${text?.replace(/"/g, '""') || ''}"`); // CSV 이스케이핑 처리
       
       // CSV 파일 내용 생성
@@ -414,48 +441,48 @@ const FeedbackSection: React.FC = () => {
           </div>
         </div>
 
-        <div className="signature-section">
-          <p className="evaluation-date">작성일: <span id="auto-date">{currentDate}</span></p>
-          <div className="signature-line">
-            <label htmlFor="opinion-judge-signature">심사위원장:</label>
-            <div className="signature-input-container">
-              <Input 
-                type="text" 
-                id="opinion-judge-signature" 
-                name="opinion-judge-signature" 
-                className="signature-input"
-                value={signatureName}
-                onChange={(e) => {
-                  setSignatureName(e.target.value);
-                  localStorage.setItem('asca-opinion-signature', e.target.value);
-                }}
-              />
+        <div className="form-section">
+          <div className="section-title">등급결정 및 동점자 처리</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <div className="opinion-title">등급결정 기준</div>
+              <ul className="list-disc pl-5 space-y-1 text-sm">
+                <li>90점 이상: 대상 및 최우수상 후보</li>
+                <li>85점 이상: 우수상 후보</li>
+                <li>80점 이상: 특선 후보</li>
+                <li>75점 이상: 입선 후보</li>
+              </ul>
             </div>
-            <span className="signature-label-text">(서명)</span>
+            <div>
+              <div className="opinion-title">동점자 발생시 처리방안</div>
+              <ul className="list-disc pl-5 space-y-1 text-sm">
+                <li>조화(調和) 점수가 높은 작품우선</li>
+                <li>장법(章法) 점수가 높은 작품우선</li>
+                <li>심사위원 간 협의를 통한 결정</li>
+              </ul>
+            </div>
           </div>
         </div>
 
-        <div className="button-container">
-          <p className="copyright-footer">© The Asian Society of Calligraphic Arts (ASCA). All rights reserved.</p>
-          <div className="button-group">
-            <Button 
-              id="opinion-form-download-pdf-button"
-              onClick={handleDownloadPDF}
-              disabled={isGeneratingPDF}
-              className="bg-[#28a745] hover:bg-[#218838]"
-            >
-              {isGeneratingPDF ? 'PDF 생성 중...' : 'PDF 다운로드'}
-            </Button> 
-            <Button 
-              id="opinion-form-export-csv-button"
-              onClick={handleExportCSV}
-              disabled={isExportingCSV}
-              className="bg-[#007bff] hover:bg-[#0056b3]"
-            >
-              {isExportingCSV ? 'CSV 내보내는 중...' : 'CSV 내보내기'}
-            </Button>
-          </div>
+        <div className="form-section">
+          <div className="section-title">심사결과 확정</div>
+          <ol className="list-decimal pl-5 space-y-1 text-sm">
+            <li>심사위원장은 종합심사 결과를 이사장에게 전달합니다.</li>
+            <li>이사회는 심사결과를 검토하고 최종 승인합니다.</li>
+            <li>확정된 심사결과는 수상자에게 개별 통보하며, 협회 홈페이지에 게시합니다.</li>
+          </ol>
         </div>
+
+        <SectionFooter
+          currentDate={currentDate}
+          signature={signatureName}
+          setSignature={setSignatureName}
+          signatureLabel="심사위원장"
+          handlePdfDownload={handleDownloadPDF}
+          handleCsvExport={handleExportCSV}
+          isPdfGenerating={isGeneratingPDF}
+          isCsvGenerating={isExportingCSV}
+        />
       </div>
       
       <style>
@@ -605,19 +632,36 @@ const FeedbackSection: React.FC = () => {
         
         .asca-eval-form .signature-section {
           margin-top: auto;
-          padding-top: 1.5rem;
+          padding-top: 1rem;
           display: flex;
+          flex-direction: column;
           justify-content: space-between;
-          align-items: flex-end;
+          align-items: flex-start;
           border-top: 1px solid hsl(var(--celadon));
+          gap: 0.75rem;
+        }
+        
+        @media (min-width: 640px) {
+          .asca-eval-form .signature-section {
+            padding-top: 1.5rem;
+            flex-direction: row;
+            align-items: flex-end;
+            gap: 0;
+          }
         }
         
         .asca-eval-form .evaluation-date {
           font-size: 10pt;
           color: hsl(var(--foreground));
-          margin: 0 0 5px 0;
-          padding-bottom: 8px;
+          margin: 0;
+          padding-bottom: 0;
           white-space: nowrap;
+        }
+        
+        @media (min-width: 640px) {
+          .asca-eval-form .evaluation-date {
+            padding-bottom: 8px;
+          }
         }
         
         .dark .asca-eval-form .evaluation-date {
@@ -629,8 +673,16 @@ const FeedbackSection: React.FC = () => {
           align-items: baseline;
           gap: 8px;
           flex-grow: 1;
-          justify-content: flex-end;
+          justify-content: flex-start;
           color: hsl(var(--foreground));
+          flex-wrap: wrap;
+        }
+        
+        @media (min-width: 640px) {
+          .asca-eval-form .signature-line {
+            justify-content: flex-end;
+            flex-wrap: nowrap;
+          }
         }
         
         .dark .asca-eval-form .signature-line {
@@ -651,7 +703,7 @@ const FeedbackSection: React.FC = () => {
         
         .asca-eval-form .signature-input {
           width: 100%;
-          padding: 8px 0;
+          padding: 4px 0;
           border: none;
           border-bottom: 1px solid hsl(var(--border));
           background-color: transparent;
@@ -663,6 +715,12 @@ const FeedbackSection: React.FC = () => {
           height: auto;
         }
         
+        @media (min-width: 640px) {
+          .asca-eval-form .signature-input {
+            padding: 8px 0;
+          }
+        }
+        
         .dark .asca-eval-form .signature-input {
           border-bottom: 1px solid hsl(var(--border));
           color: hsl(var(--foreground));
@@ -672,7 +730,13 @@ const FeedbackSection: React.FC = () => {
           font-size: 10pt;
           color: hsl(var(--foreground));
           white-space: nowrap;
-          padding-bottom: 8px;
+          padding-bottom: 0;
+        }
+        
+        @media (min-width: 640px) {
+          .asca-eval-form .signature-label-text {
+            padding-bottom: 8px;
+          }
         }
         
         .dark .asca-eval-form .signature-label-text {
@@ -680,28 +744,49 @@ const FeedbackSection: React.FC = () => {
         }
         
         .asca-eval-form .button-container {
-          margin-top: 1rem;
+          margin-top: 0.75rem;
           padding-top: 0.5rem;
           display: flex;
+          flex-direction: column-reverse;
           justify-content: space-between;
           align-items: center;
+          gap: 0.75rem;
           border-top: 1px solid hsl(var(--celadon));
+        }
+        
+        @media (min-width: 640px) {
+          .asca-eval-form .button-container {
+            margin-top: 1rem;
+            flex-direction: row;
+            gap: 0;
+          }
         }
         
         .asca-eval-form .copyright-footer {
           font-size: 8pt;
           color: hsl(var(--muted-foreground));
-          text-align: left;
+          text-align: center;
           margin: 0;
-          flex-grow: 1;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
+          width: 100%;
+        }
+        
+        @media (min-width: 640px) {
+          .asca-eval-form .copyright-footer {
+            text-align: left;
+            width: auto;
+          }
         }
         
         .asca-eval-form .button-group {
           display: flex;
-          gap: 10px;
+          gap: 8px;
+          width: 100%;
+        }
+        
+        @media (min-width: 640px) {
+          .asca-eval-form .button-group {
+            width: auto;
+          }
         }
         
         .asca-eval-form .print-content {
@@ -724,16 +809,57 @@ const FeedbackSection: React.FC = () => {
           .asca-eval-form {
             width: 100%;
             margin: 0;
-            padding: 1rem;
+            padding: 1rem 0.75rem;
           }
           
           .asca-eval-form .title {
-            font-size: 20pt;
-            margin-bottom: 1rem;
+            font-size: 18pt;
+            margin-bottom: 0.75rem;
           }
           
           .asca-eval-form .categories-grid {
             grid-template-columns: 1fr;
+            gap: 1rem;
+          }
+
+          .asca-eval-form .form-section {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+          }
+
+          .asca-eval-form .section-title {
+            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.4rem;
+          }
+
+          .asca-eval-form .opinion-field {
+            margin-bottom: 1rem;
+          }
+
+          .asca-eval-form .opinion-title {
+            font-size: 0.9rem;
+            margin-bottom: 0.3rem;
+          }
+
+          .asca-eval-form textarea {
+            min-height: 100px !important;
+            padding: 8px;
+            font-size: 0.9rem;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .asca-eval-form {
+            padding: 0.75rem 0.5rem;
+          }
+
+          .asca-eval-form .title {
+            font-size: 16pt;
+          }
+
+          .asca-eval-form textarea {
+            min-height: 80px !important;
           }
         }
         `}
