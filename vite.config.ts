@@ -9,8 +9,10 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
-    target: 'es2015',
-    modulePreload: false,
+    target: 'esnext',
+    modulePreload: {
+      polyfill: false
+    },
     sourcemap: false,
     minify: 'terser',
     rollupOptions: {
@@ -40,6 +42,30 @@ export default defineConfig({
         if (!fs.existsSync('dist/404.html')) {
           fs.copyFileSync('dist/index.html', 'dist/404.html');
           console.log('404.html file created');
+        }
+        
+        // PWA 관련 파일들 복사
+        if (fs.existsSync('public/sw.js')) {
+          fs.copyFileSync('public/sw.js', 'dist/sw.js');
+          console.log('Service Worker file copied to dist directory');
+        }
+        
+        if (fs.existsSync('public/manifest.json')) {
+          fs.copyFileSync('public/manifest.json', 'dist/manifest.json');
+          console.log('Manifest file copied to dist directory');
+        }
+        
+        // icons 폴더 복사
+        if (fs.existsSync('public/icons')) {
+          if (!fs.existsSync('dist/icons')) {
+            fs.mkdirSync('dist/icons');
+          }
+          
+          const iconFiles = fs.readdirSync('public/icons');
+          iconFiles.forEach(file => {
+            fs.copyFileSync(`public/icons/${file}`, `dist/icons/${file}`);
+          });
+          console.log('Icon files copied to dist/icons directory');
         }
       }
     } as PluginOption
