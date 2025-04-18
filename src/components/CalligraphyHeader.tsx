@@ -7,7 +7,16 @@ const CalligraphyHeader = () => {
 
   // 테마 변경 시 로고 이미지 소스 업데이트
   useEffect(() => {
-    setLogoSrc(theme === 'dark' ? '/logo-light.png' : '/logo-black.png');
+    // Vite에서 정적 이미지 처리
+    const baseUrl = import.meta.env.BASE_URL || '';
+    const lightLogo = `${baseUrl}logo-light.png`;
+    const darkLogo = `${baseUrl}logo-black.png`;
+    
+    setLogoSrc(theme === 'dark' ? lightLogo : darkLogo);
+    
+    // 디버깅용 로그
+    console.log('현재 테마:', theme);
+    console.log('로고 경로:', theme === 'dark' ? lightLogo : darkLogo);
   }, [theme]);
 
   return (
@@ -19,11 +28,18 @@ const CalligraphyHeader = () => {
         rel="noopener noreferrer"
         className="absolute top-2 left-4 md:top-4 md:left-6 transition-opacity hover:opacity-80"
       >
-        <img 
-          src={logoSrc} 
-          alt="동양서예협회 로고" 
-          className="w-24 md:w-28 h-auto"
-        />
+        {logoSrc && (
+          <img 
+            src={logoSrc} 
+            alt="동양서예협회 로고" 
+            className="w-24 md:w-28 h-auto"
+            onError={(e) => {
+              console.error('로고 이미지 로딩 오류:', e);
+              // 에러 발생시 대체 이미지 표시
+              e.currentTarget.src = `${import.meta.env.BASE_URL || ''}placeholder.svg`;
+            }}
+          />
+        )}
       </a>
 
       <div className="mx-auto max-w-4xl px-4 text-center">
