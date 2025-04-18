@@ -290,3 +290,78 @@ table {
   color: hsl(var(--foreground)) !important;
   border-color: hsl(var(--border)) !important;
 }
+
+/* 반응형 디자인 최적화 */
+@media (max-width: 768px) {
+  .calligraphy-title {
+    @apply text-3xl mb-4 tracking-tight;
+  }
+
+  .calligraphy-section {
+    @apply p-4;
+  }
+
+  .calligraphy-section-title {
+    @apply text-lg mb-3;
+  }
+
+  /* 테이블 스크롤 처리 개선 */
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  /* 모바일에서 버튼 크기 및 간격 */
+  button {
+    @apply text-sm py-1.5 px-2;
+  }
+
+  /* 버튼 그룹 간격 조정 */
+  .button-group {
+    @apply space-x-1 flex-wrap;
+  }
+
+  .button-group button {
+    @apply my-1;
+  }
+
+  /* 입력 필드 크기 조정 */
+  input, select, textarea {
+    @apply text-sm py-1.5 px-2 max-w-full;
+  }
+
+  /* 라벨 크기 조정 */
+  label {
+    @apply text-sm;
+  }
+
+  /* 점수 버튼 크기 조정 */
+  button.w-8.h-8 {
+    @apply w-7 h-7 text-[10px];
+  }
+}
+
+/* 더 작은 화면에 대한 추가 최적화 */
+@media (max-width: 576px) {
+  .calligraphy-title {
+    @apply text-2xl mb-3;
+  }
+
+  .calligraphy-section {
+    @apply p-3;
+  }
+
+  .calligraphy-section-title {
+    @apply text-base mb-2;
+  }
+
+  /* 작은 화면에서의 폼 레이아웃 최적화 */
+  .form-grid {
+    @apply grid-cols-1;
+  }
+
+  /* 점수 버튼 크기 추가 축소 */
+  button.w-8.h-8, button.w-7.h-7 {
+    @apply w-6 h-6 text-[9px];
+  }
+}

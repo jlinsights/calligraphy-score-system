@@ -177,7 +177,7 @@ const EvaluationSection = () => {
         <button
           key={i}
           onClick={() => handleScoreClick(category, i)}
-          className={`w-8 h-8 flex items-center justify-center text-xs border border-border rounded-md hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors 
+          className={`w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 flex items-center justify-center text-[9px] sm:text-[10px] md:text-xs border border-border rounded-md hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors 
             ${
               (category === 'points' && pointsScore === i) ||
               (category === 'structure' && structureScore === i) ||
