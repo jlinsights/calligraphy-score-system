@@ -42,7 +42,7 @@
   "github": {
     "silent": true
   },
-  "buildEnvironmentVariables": {
+  "env": {
     "VITE_DISABLE_MODULEPRELOAD_POLYFILL": "true"
   }
 } 
