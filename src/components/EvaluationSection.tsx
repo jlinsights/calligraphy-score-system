@@ -105,20 +105,53 @@ const EvaluationSection = () => {
       const imgData = canvas.toDataURL('image/png');
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
-      const canvasAspectRatio = canvas.width / canvas.height;
-      const pageMargin = 15;
+      const margin = 15;
+      const contentWidth = pdfWidth - (margin * 2);
       
       pdf.setFontSize(16);
-      pdf.text('심사표', pdfWidth / 2, pageMargin, { align: 'center' });
+      pdf.text('심사표', pdfWidth / 2, margin, { align: 'center' });
       
-      const contentWidth = pdfWidth - (pageMargin * 2);
-      const contentHeight = contentWidth / canvasAspectRatio;
-      pdf.addImage(imgData, 'PNG', pageMargin, pageMargin + 10, contentWidth, contentHeight);
+      const imgWidth = contentWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
       
-      const finalY = pdfHeight - pageMargin;
+      const pageContentHeight = pdfHeight - (margin * 2) - 10;
+      const ratio = canvas.width / imgWidth;
+      const pageCount = Math.ceil(imgHeight / pageContentHeight);
+      
+      let srcY = 0;
+      let yOffset = margin + 10;
+      
+      for (let i = 0; i < pageCount; i++) {
+        if (i > 0) {
+          pdf.addPage();
+          yOffset = margin;
+        }
+        
+        const canvasHeight = Math.min(
+          (pageContentHeight * ratio),
+          canvas.height - srcY
+        );
+        
+        const destHeight = canvasHeight / ratio;
+        
+        pdf.addImage(
+          imgData,
+          'PNG',
+          margin,
+          yOffset,
+          imgWidth,
+          destHeight
+        );
+        
+        srcY += canvasHeight;
+      }
+      
+      const lastPage = pdf.getNumberOfPages();
+      pdf.setPage(lastPage);
+      const finalY = pdfHeight - (margin / 2);
       pdf.setFontSize(10);
-      pdf.text(`작성일: ${currentDate}`, pageMargin, finalY - 5);
-      pdf.text(`심사위원장: ${judgeSignature || '_______________'} (서명)`, pdfWidth - pageMargin - 80, finalY - 5);
+      pdf.text(`작성일: ${currentDate}`, margin, finalY - 5);
+      pdf.text(`심사위원장: ${judgeSignature || '_______________'} (서명)`, pdfWidth - margin - 80, finalY - 5);
       
       const filename = `심사표_${category || '전체'}_${artistName || '무제'}_${new Date().toISOString().split('T')[0]}.pdf`;
       pdf.save(filename);
