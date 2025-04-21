@@ -210,7 +210,7 @@ const EvaluationSection = () => {
       markdownContent += `- 75-79점: D등급 (입선 후보)\n`;
       markdownContent += `- 75점 미만: 기준 미달\n\n`;
       
-      markdownContent += `심사위원장: ${judgeSignature}`;
+      markdownContent += `심사위원: ${judgeSignature}`;
       
       // 파일 다운로드
       const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8;' });
