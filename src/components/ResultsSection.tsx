@@ -4,12 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileDown, Save, Plus, X, FileText, FileOutput } from 'lucide-react';
+import { Save, Plus, X, FileText, FileOutput } from 'lucide-react';
 import SectionFooter from "@/components/ui/section-footer";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 import { generatePdfFromElement } from '@/utils/pdfUtils';
 import TurndownService from 'turndown';
+import { toast } from "@/components/ui/use-toast";
 
 interface ResultRow {
   rowId: number;
@@ -25,6 +24,22 @@ interface ResultRow {
   remarks: string;
 }
 
+// 심사 결과 인터페이스 정의
+interface EvaluationResult {
+  id: string;
+  date: string;
+  category: string;
+  artistName: string;
+  workTitle: string;
+  pointsScore: number | null;
+  structureScore: number | null;
+  compositionScore: number | null;
+  harmonyScore: number | null;
+  totalScore: number;
+  judgeSignature: string;
+  timestamp: number;
+}
+
 const ResultsSection = () => {
   const [resultsData, setResultsData] = useState<ResultRow[]>([]);
   const [nextRowId, setNextRowId] = useState(0);
@@ -33,13 +48,110 @@ const ResultsSection = () => {
   const [judgeSignature, setJudgeSignature] = useState('');
   const [currentDate, setCurrentDate] = useState('');
   const formRef = useRef<HTMLDivElement>(null);
-  const [isPdfGenerating, setIsPdfGenerating] = useState(false);
   const [isMarkdownGenerating, setIsMarkdownGenerating] = useState(false);
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
 
   useEffect(() => {
     setFormattedCurrentDate();
     initializeRows();
+    loadSignatureFromLocalStorage();
+    loadAvailableCategories();
   }, []);
+
+  // 카테고리가 변경될 때 해당 카테고리의 데이터 로드
+  useEffect(() => {
+    if (category) {
+      loadEvaluationsByCategory(category);
+    }
+  }, [category]);
+
+  const loadSignatureFromLocalStorage = () => {
+    const savedSignature = localStorage.getItem('judgeSignature');
+    if (savedSignature) {
+      setJudgeSignature(savedSignature);
+    }
+  };
+
+  // 사용 가능한 심사 부문 목록 로드
+  const loadAvailableCategories = () => {
+    try {
+      const resultsStr = localStorage.getItem('evaluationResults');
+      if (!resultsStr) return;
+
+      const results: EvaluationResult[] = JSON.parse(resultsStr);
+      const categories = Array.from(new Set(results.map(r => r.category))).filter(Boolean);
+      
+      setAvailableCategories(categories);
+    } catch (error) {
+      console.error('카테고리 로드 중 오류 발생:', error);
+    }
+  };
+
+  // 선택된 부문의 평가 데이터 로드
+  const loadEvaluationsByCategory = (selectedCategory: string) => {
+    try {
+      const resultsStr = localStorage.getItem('evaluationResults');
+      if (!resultsStr) return;
+
+      const results: EvaluationResult[] = JSON.parse(resultsStr);
+      const filteredResults = results.filter(r => r.category === selectedCategory);
+      
+      if (filteredResults.length === 0) {
+        toast({
+          title: "알림",
+          description: "해당 부문에 저장된 심사 결과가 없습니다.",
+          duration: 3000,
+        });
+        return;
+      }
+
+      // 날짜 정보 설정 (첫 번째 항목의 날짜 사용)
+      if (filteredResults.length > 0) {
+        setEvaluationDate(filteredResults[0].date);
+      }
+
+      // 행 데이터 생성
+      const newRows: ResultRow[] = filteredResults.map((result, index) => ({
+        rowId: index,
+        displayId: index + 1,
+        artist: result.artistName,
+        title: result.workTitle,
+        score1: result.totalScore.toString(),
+        score2: '',
+        score3: '',
+        average: null,
+        rank: null,
+        grade: '',
+        remarks: ''
+      }));
+
+      // 최소 5개의 행 보장
+      while (newRows.length < 5) {
+        newRows.push(createNewRow(newRows.length + 1));
+      }
+
+      // 데이터 설정
+      setResultsData(newRows);
+      setNextRowId(newRows.length);
+      
+      // 계산 수행
+      updateCalculationsAndRank(newRows);
+
+      toast({
+        title: "데이터 로드 완료",
+        description: `${selectedCategory} 부문의 ${filteredResults.length}개 심사 결과를 로드했습니다.`,
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error('평가 데이터 로드 중 오류 발생:', error);
+      toast({
+        title: "오류",
+        description: "데이터 로드 중 오류가 발생했습니다.",
+        duration: 3000,
+        variant: "destructive"
+      });
+    }
+  };
 
   const setFormattedCurrentDate = () => {
     const now = new Date();
@@ -202,37 +314,30 @@ const ResultsSection = () => {
       resultsData.forEach(row => {
         const rowData = [
           row.displayId,
-          `"${row.artist}"`,
-          `"${row.title}"`,
+          row.artist,
+          row.title,
           row.score1,
           row.score2,
           row.score3,
-          row.average !== null ? row.average : '',
-          row.rank !== null ? row.rank : '',
+          row.average?.toString() || '',
+          row.rank?.toString() || '',
           row.grade,
-          `"${row.remarks}"`
+          row.remarks
         ];
         csvContent += rowData.join(',') + '\n';
       });
       
-      csvContent += `\n심사위원장 서명:,"${judgeSignature}"`;
-      
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      const filename = `심사결과종합표_${category || '전체'}_${evaluationDate || new Date().toISOString().split('T')[0]}.csv`;
-      
-      link.setAttribute("href", url);
-      link.setAttribute("download", filename);
-      link.style.visibility = 'hidden';
+      const encodedUri = encodeURI('data:text/csv;charset=utf-8,' + csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', `심사결과종합표_${category ? category + '_' : ''}${evaluationDate}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      URL.revokeObjectURL(url);
       
     } catch (error) {
-      console.error("CSV 생성 오류:", error);
-      alert("CSV 파일을 생성하는 중 오류가 발생했습니다.");
+      console.error('CSV 내보내기 오류:', error);
+      alert('CSV 내보내기에 실패했습니다.');
     }
   };
 
@@ -240,354 +345,273 @@ const ResultsSection = () => {
     try {
       setIsMarkdownGenerating(true);
       
+      // Turndown 서비스 초기화
+      const turndownService = new TurndownService();
+      
       // 마크다운 콘텐츠 생성
-      let markdownContent = `# 심사결과종합표\n\n`;
-      markdownContent += `심사 일시: ${evaluationDate}\n`;
-      markdownContent += `심사 부문: ${category}\n`;
-      markdownContent += `작성일: ${currentDate}\n\n`;
+      let markdownContent = `# 심사 결과 종합표\n\n`;
+      markdownContent += `**심사 일시:** ${evaluationDate}\n`;
+      markdownContent += `**심사 부문:** ${category}\n`;
+      markdownContent += `**작성일:** ${currentDate}\n\n`;
       
       // 테이블 헤더
       markdownContent += `| 번호 | 작가 | 작품명 | 심사1 | 심사2 | 심사3 | 평균 | 순위 | 등급 | 비고 |\n`;
-      markdownContent += `|------|------|--------|------|------|------|------|------|------|------|\n`;
+      markdownContent += `| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n`;
       
-      // 데이터 행 추가
+      // 테이블 내용
       resultsData.forEach(row => {
-        markdownContent += `| ${row.displayId} | ${row.artist} | ${row.title} | ${row.score1} | ${row.score2} | ${row.score3} | ${row.average !== null ? row.average : ''} | ${row.rank !== null ? row.rank : ''} | ${row.grade} | ${row.remarks} |\n`;
+        markdownContent += `| ${row.displayId} | ${row.artist} | ${row.title} | ${row.score1} | ${row.score2} | ${row.score3} | ${row.average || ''} | ${row.rank || ''} | ${row.grade} | ${row.remarks} |\n`;
       });
       
-      // 등급별 분포
-      markdownContent += `\n## 수상 등급별 분포\n\n`;
-      markdownContent += `- A등급 (90점 이상): ${resultsData.filter(r => r.grade === 'A').length}명\n`;
-      markdownContent += `- B등급 (80-89점): ${resultsData.filter(r => r.grade === 'B').length}명\n`;
-      markdownContent += `- C등급 (70-79점): ${resultsData.filter(r => r.grade === 'C').length}명\n`;
-      markdownContent += `- D등급 (69점 이하): ${resultsData.filter(r => r.grade === 'D').length}명\n\n`;
-      
-      // 등급결정 기준
-      markdownContent += `## 등급결정 및 동점자 처리\n\n`;
-      markdownContent += `### 등급결정 기준\n\n`;
-      markdownContent += `- 90점 이상: 대상 및 최우수상 후보\n`;
-      markdownContent += `- 85점 이상: 우수상 후보\n`;
-      markdownContent += `- 80점 이상: 특선 후보\n`;
-      markdownContent += `- 75점 이상: 입선 후보\n\n`;
-      
-      // 동점자 처리
-      markdownContent += `### 동점자 발생시 처리방안\n\n`;
-      markdownContent += `- 조화(調和) 점수가 높은 작품우선\n`;
-      markdownContent += `- 장법(章法) 점수가 높은 작품우선\n`;
-      markdownContent += `- 심사위원 간 협의를 통한 결정\n\n`;
-      
-      // 심사결과 확정
-      markdownContent += `## 심사결과 확정\n\n`;
-      markdownContent += `1. 심사위원장은 종합심사 결과를 이사장에게 보고한다.\n`;
-      markdownContent += `2. 이사회는 심사결과를 검토하고 최종 승인한다.\n`;
-      markdownContent += `3. 확정된 심사결과는 수상자에게 개별 통보하며, 협회 홈페이지에 게시한다.\n\n`;
-      
-      markdownContent += `심사위원: ${judgeSignature}`;
+      markdownContent += `\n**서명:** ${judgeSignature}\n`;
       
       // 파일 다운로드
-      const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8;' });
+      const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.setAttribute('href', url);
-      
-      // 파일명 생성
-      const filename = `심사결과표_${category || '전체'}_${evaluationDate || new Date().toISOString().split('T')[0]}.md`;
-      link.setAttribute('download', filename);
-      
-      // 링크 클릭하여 다운로드
-      document.body.appendChild(link);
+      link.href = url;
+      link.download = `심사결과종합표_${category ? category + '_' : ''}${evaluationDate}.md`;
       link.click();
       
-      // 임시 요소 제거
-      setTimeout(() => {
-        if (document.body.contains(link)) {
-          document.body.removeChild(link);
-        }
-        URL.revokeObjectURL(url);
-        setIsMarkdownGenerating(false);
-        alert('심사결과표를 마크다운 파일로 내보냈습니다.');
-      }, 100);
+      URL.revokeObjectURL(url);
+      
     } catch (error) {
-      console.error('마크다운 내보내기 오류:', error);
-      setIsMarkdownGenerating(false);
-      alert('마크다운 파일을 생성하는 중 오류가 발생했습니다.');
-    }
-  };
-
-  const handlePdfDownload = async () => {
-    if (!formRef.current) {
-      alert("폼 요소를 찾을 수 없습니다.");
-      return;
-    }
-    
-    setIsPdfGenerating(true);
-    
-    try {
-      const form = formRef.current;
-      
-      // PDF 생성을 위한 스타일 정리
-      const buttonContainers = form.querySelectorAll('.button-container');
-      const tempStyles: { el: HTMLElement; display: string }[] = [];
-      
-      // 버튼 컨테이너 숨기기 및 원래 스타일 저장
-      buttonContainers.forEach(el => {
-        const htmlEl = el as HTMLElement;
-        tempStyles.push({ el: htmlEl, display: htmlEl.style.display });
-        htmlEl.style.display = 'none';
-      });
-      
-      // PDF 생성을 위한 클래스 추가
-      form.classList.add('pdf-generating');
-      
-      // 파일명 생성
-      const filename = `심사결과표_${category || '전체'}_${evaluationDate || new Date().toISOString().split('T')[0]}.pdf`;
-      
-      // PDF 생성
-      await generatePdfFromElement(
-        form,
-        filename,
-        '심사 결과표',
-        currentDate,
-        judgeSignature
-      );
-      
-      // 원래 스타일로 복원
-      tempStyles.forEach(item => {
-        item.el.style.display = item.display;
-      });
-      form.classList.remove('pdf-generating');
-      
-      alert('심사 결과표가 PDF로 저장되었습니다.');
-    } catch (error) {
-      console.error("PDF 생성 오류:", error);
-      alert("PDF 파일을 생성하는 중 오류가 발생했습니다.");
+      console.error('마크다운 생성 오류:', error);
+      alert('마크다운 생성에 실패했습니다.');
     } finally {
-      setIsPdfGenerating(false);
+      setIsMarkdownGenerating(false);
     }
   };
 
   return (
-    <section className="calligraphy-section" ref={formRef}>
-      <h2 className="calligraphy-section-title">심사결과종합표</h2>
-      
-      <div className="form-header mb-4 sm:mb-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-          <div>
-            <Label htmlFor="eval-date" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">심사 일시</Label>
-            <Input 
-              id="eval-date"
-              type="date"
-              value={evaluationDate}
-              onChange={(e) => setEvaluationDate(e.target.value)}
-              className="w-full h-8 sm:h-10 text-xs sm:text-sm"
-            />
+    <div className="container mx-auto px-2 sm:px-4 py-4 md:py-8 font-sans">
+      <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-md text-gray-900 dark:text-gray-100">
+        <div className="mb-4 text-center">
+          <h1 className="text-2xl font-bold">심사 결과 종합표</h1>
+        </div>
+        
+        <div ref={formRef} className="print-content">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-4 mb-4">
+            <div className="flex flex-col">
+              <Label htmlFor="evaluation-date" className="mb-1 text-xs sm:text-sm">심사 일시</Label>
+              <Input 
+                id="evaluation-date" 
+                type="date" 
+                value={evaluationDate}
+                onChange={(e) => setEvaluationDate(e.target.value)}
+                className="text-xs sm:text-sm py-1 h-8"
+              />
+            </div>
+            <div className="flex flex-col">
+              <Label htmlFor="category" className="mb-1 text-xs sm:text-sm">심사 부문</Label>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger id="category" className="text-xs sm:text-sm h-8">
+                  <SelectValue placeholder="심사 부문 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableCategories.map((cat) => (
+                    <SelectItem key={cat} value={cat} className="text-xs sm:text-sm">
+                      {cat}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col">
+              <Label htmlFor="judge-signature" className="mb-1 text-xs sm:text-sm">심사위원 성명</Label>
+              <Input 
+                id="judge-signature" 
+                type="text" 
+                value={judgeSignature}
+                onChange={(e) => setJudgeSignature(e.target.value)}
+                className="text-xs sm:text-sm py-1 h-8"
+              />
+            </div>
           </div>
           
+          <div className="overflow-x-auto -mx-4 sm:mx-0">
+            <div className="inline-block min-w-full py-2 align-middle">
+              <Table className="min-w-full border-collapse">
+                <TableHeader className="bg-gray-100 dark:bg-gray-700">
+                  <TableRow>
+                    <TableHead className="py-1 px-2 text-xs whitespace-nowrap">번호</TableHead>
+                    <TableHead className="py-1 px-2 text-xs">작가</TableHead>
+                    <TableHead className="py-1 px-2 text-xs">작품명</TableHead>
+                    <TableHead className="py-1 px-2 text-xs whitespace-nowrap">심사1</TableHead>
+                    <TableHead className="py-1 px-2 text-xs whitespace-nowrap">심사2</TableHead>
+                    <TableHead className="py-1 px-2 text-xs whitespace-nowrap">심사3</TableHead>
+                    <TableHead className="py-1 px-2 text-xs whitespace-nowrap">평균</TableHead>
+                    <TableHead className="py-1 px-2 text-xs whitespace-nowrap">순위</TableHead>
+                    <TableHead className="py-1 px-2 text-xs whitespace-nowrap">등급</TableHead>
+                    <TableHead className="py-1 px-2 text-xs whitespace-nowrap">비고</TableHead>
+                    <TableHead className="py-1 px-2 text-xs sr-only print:hidden">작업</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {resultsData.map((row) => (
+                    <TableRow key={row.rowId} className="border-b border-gray-200 dark:border-gray-700">
+                      <TableCell className="py-1 px-2 text-xs">{row.displayId}</TableCell>
+                      <TableCell className="py-1 px-2">
+                        <Input 
+                          value={row.artist} 
+                          onChange={(e) => handleInputChange(row.rowId, 'artist', e.target.value)}
+                          className="text-xs p-1 h-8 w-full"
+                        />
+                      </TableCell>
+                      <TableCell className="py-1 px-2">
+                        <Input 
+                          value={row.title} 
+                          onChange={(e) => handleInputChange(row.rowId, 'title', e.target.value)}
+                          className="text-xs p-1 h-8 w-full"
+                        />
+                      </TableCell>
+                      <TableCell className="py-1 px-2">
+                        <Input 
+                          type="number"
+                          min={0}
+                          max={100}
+                          value={row.score1} 
+                          onChange={(e) => handleInputChange(row.rowId, 'score1', e.target.value)}
+                          className="text-xs p-1 h-8 w-16"
+                        />
+                      </TableCell>
+                      <TableCell className="py-1 px-2">
+                        <Input 
+                          type="number"
+                          min={0}
+                          max={100}
+                          value={row.score2} 
+                          onChange={(e) => handleInputChange(row.rowId, 'score2', e.target.value)}
+                          className="text-xs p-1 h-8 w-16"
+                        />
+                      </TableCell>
+                      <TableCell className="py-1 px-2">
+                        <Input 
+                          type="number"
+                          min={0}
+                          max={100}
+                          value={row.score3} 
+                          onChange={(e) => handleInputChange(row.rowId, 'score3', e.target.value)}
+                          className="text-xs p-1 h-8 w-16"
+                        />
+                      </TableCell>
+                      <TableCell className="py-1 px-2 text-xs text-center">{row.average !== null ? row.average.toFixed(1) : ''}</TableCell>
+                      <TableCell className="py-1 px-2 text-xs text-center">{row.rank}</TableCell>
+                      <TableCell className={`py-1 px-2 text-xs text-center ${getGradeClass(row.grade)}`}>{row.grade}</TableCell>
+                      <TableCell className="py-1 px-2">
+                        <Input 
+                          value={row.remarks} 
+                          onChange={(e) => handleInputChange(row.rowId, 'remarks', e.target.value)}
+                          className="text-xs p-1 h-8 w-full"
+                        />
+                      </TableCell>
+                      <TableCell className="py-1 px-2 print:hidden">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => deleteRow(row.rowId)}
+                          className="h-6 w-6"
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+          
+          <div className="mt-6">
+            <h2 className="text-lg font-semibold mb-2">등급 배분</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <div className="bg-[rgba(144,238,144,0.3)] p-2 rounded">
+                <p className="font-bold text-center">A</p>
+                <p className="text-sm text-center">90점 이상</p>
+                <p className="text-center text-sm mt-1">
+                  {resultsData.filter(r => r.grade === 'A').length}명
+                </p>
+              </div>
+              <div className="bg-[rgba(135,206,250,0.3)] p-2 rounded">
+                <p className="font-bold text-center">B</p>
+                <p className="text-sm text-center">80점 이상 90점 미만</p>
+                <p className="text-center text-sm mt-1">
+                  {resultsData.filter(r => r.grade === 'B').length}명
+                </p>
+              </div>
+              <div className="bg-[rgba(255,255,224,0.3)] p-2 rounded">
+                <p className="font-bold text-center">C</p>
+                <p className="text-sm text-center">70점 이상 80점 미만</p>
+                <p className="text-center text-sm mt-1">
+                  {resultsData.filter(r => r.grade === 'C').length}명
+                </p>
+              </div>
+              <div className="bg-[rgba(255,192,203,0.3)] p-2 rounded">
+                <p className="font-bold text-center">D</p>
+                <p className="text-sm text-center">70점 미만</p>
+                <p className="text-center text-sm mt-1">
+                  {resultsData.filter(r => r.grade === 'D').length}명
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-4 text-right">
+            <p className="text-xs sm:text-sm">날짜: {currentDate}</p>
+            <p className="text-xs sm:text-sm mt-1">서명: {judgeSignature}</p>
+          </div>
+        </div>
+        
+        <div className="flex flex-wrap gap-2 justify-between items-center mt-6 print:hidden">
           <div>
-            <Label htmlFor="eval-category" className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">심사 부문</Label>
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger id="eval-category" className="h-8 sm:h-10 text-xs sm:text-sm">
-                <SelectValue placeholder="부문 선택..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="한글서예" className="text-xs sm:text-sm">한글서예</SelectItem>
-                <SelectItem value="한문서예" className="text-xs sm:text-sm">한문서예</SelectItem>
-                <SelectItem value="현대서예" className="text-xs sm:text-sm">현대서예</SelectItem>
-                <SelectItem value="캘리그라피" className="text-xs sm:text-sm">캘리그라피</SelectItem>
-                <SelectItem value="전각・서각" className="text-xs sm:text-sm">전각・서각</SelectItem>
-                <SelectItem value="문인화・동양화・민화" className="text-xs sm:text-sm">문인화・동양화・민화</SelectItem>
-              </SelectContent>
-            </Select>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={addRow}
+              className="flex items-center"
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              <span className="text-xs">행 추가</span>
+            </Button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleDownloadMarkdown}
+              disabled={isMarkdownGenerating}
+              className="flex items-center"
+            >
+              <FileOutput className="h-4 w-4 mr-1" />
+              <span className="text-xs">MD 내보내기</span>
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleExportCsv}
+              className="flex items-center"
+            >
+              <FileText className="h-4 w-4 mr-1" />
+              <span className="text-xs">CSV 내보내기</span>
+            </Button>
           </div>
         </div>
       </div>
-
-      <div className="text-right mb-2">
-        <Button 
-          onClick={addRow} 
-          size="sm" 
-          className="bg-[#6c757d] hover:bg-[#5a6268] text-white text-xs sm:text-sm h-7 sm:h-9"
-        >
-          <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1" /> 행 추가
-        </Button>
-      </div>
-
-      <div className="overflow-x-auto mb-6 border-b border-[#E4D7C5] pb-4">
-        <Table className="w-full border border-gray-300 table-fixed">
-          <TableHeader>
-            <TableRow className="bg-[#f8f9fa]">
-              <TableHead className="w-[40px] text-center border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">번호</TableHead>
-              <TableHead className="w-[80px] sm:w-[15%] text-left border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">작가</TableHead>
-              <TableHead className="w-[100px] sm:w-[18%] text-left border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">작품명</TableHead>
-              <TableHead className="w-[50px] sm:w-[8%] text-center border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">심사1</TableHead>
-              <TableHead className="w-[50px] sm:w-[8%] text-center border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">심사2</TableHead>
-              <TableHead className="w-[50px] sm:w-[8%] text-center border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">심사3</TableHead>
-              <TableHead className="w-[50px] sm:w-[8%] text-center border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">평균</TableHead>
-              <TableHead className="w-[40px] sm:w-[6%] text-center border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">순위</TableHead>
-              <TableHead className="w-[40px] sm:w-[7%] text-center border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">등급</TableHead>
-              <TableHead className="w-[80px] sm:w-[12%] text-left border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">비고</TableHead>
-              <TableHead className="w-[40px] sm:w-[5%] text-center border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">삭제</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {resultsData.map((row) => (
-              <TableRow 
-                key={row.rowId} 
-                className={getGradeClass(row.grade)}
-              >
-                <TableCell className="text-center font-medium border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">
-                  {row.displayId}
-                </TableCell>
-                <TableCell className="border border-gray-300 p-0 sm:p-1">
-                  <Input 
-                    value={row.artist}
-                    onChange={(e) => handleInputChange(row.rowId, 'artist', e.target.value)}
-                    className="w-full p-1 text-xs sm:text-sm border-0 h-7 sm:h-8"
-                  />
-                </TableCell>
-                <TableCell className="border border-gray-300 p-0 sm:p-1">
-                  <Input 
-                    value={row.title}
-                    onChange={(e) => handleInputChange(row.rowId, 'title', e.target.value)}
-                    className="w-full p-1 text-xs sm:text-sm border-0 h-7 sm:h-8"
-                  />
-                </TableCell>
-                <TableCell className="border border-gray-300 p-0 sm:p-1">
-                  <Input 
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={row.score1}
-                    onChange={(e) => handleInputChange(row.rowId, 'score1', e.target.value)}
-                    className="w-full p-1 text-center text-xs sm:text-sm border-0 h-7 sm:h-8"
-                  />
-                </TableCell>
-                <TableCell className="border border-gray-300 p-0 sm:p-1">
-                  <Input 
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={row.score2}
-                    onChange={(e) => handleInputChange(row.rowId, 'score2', e.target.value)}
-                    className="w-full p-1 text-center text-xs sm:text-sm border-0 h-7 sm:h-8"
-                  />
-                </TableCell>
-                <TableCell className="border border-gray-300 p-0 sm:p-1">
-                  <Input 
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={row.score3}
-                    onChange={(e) => handleInputChange(row.rowId, 'score3', e.target.value)}
-                    className="w-full p-1 text-center text-xs sm:text-sm border-0 h-7 sm:h-8"
-                  />
-                </TableCell>
-                <TableCell className="text-center font-medium border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">
-                  {row.average !== null ? row.average : ''}
-                </TableCell>
-                <TableCell className="text-center font-medium border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">
-                  {row.rank !== null ? row.rank : ''}
-                </TableCell>
-                <TableCell className="text-center font-medium border border-gray-300 p-1 sm:p-2 text-xs sm:text-sm">
-                  {row.grade}
-                </TableCell>
-                <TableCell className="border border-gray-300 p-0 sm:p-1">
-                  <Input 
-                    value={row.remarks}
-                    onChange={(e) => handleInputChange(row.rowId, 'remarks', e.target.value)}
-                    className="w-full p-1 text-xs sm:text-sm border-0 h-7 sm:h-8"
-                  />
-                </TableCell>
-                <TableCell className="text-center border border-gray-300 p-0 sm:p-1">
-                  <Button 
-                    onClick={() => deleteRow(row.rowId)} 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-6 w-6 text-[#C53030] hover:text-[#9B4444] hover:bg-gray-100"
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      <div className="mb-6 border-b border-[#E4D7C5] pb-4">
-        <h3 className="text-lg sm:text-xl font-medium mb-2 text-[#1A1F2C] border-b border-[#C53030] pb-2 inline-block">수상 등급별 분포</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
-          <div className="p-2 sm:p-3 border border-gray-300 rounded-md text-center bg-[rgba(144,238,144,0.3)]">
-            <div className="text-xs sm:text-sm text-gray-500 mb-1">A등급 (90점 이상)</div>
-            <div className="text-lg sm:text-xl font-bold text-[#28a745]">
-              {resultsData.filter(r => r.grade === 'A').length}명
-            </div>
-          </div>
-          <div className="p-2 sm:p-3 border border-gray-300 rounded-md text-center bg-[rgba(135,206,250,0.3)]">
-            <div className="text-xs sm:text-sm text-gray-500 mb-1">B등급 (80-89점)</div>
-            <div className="text-lg sm:text-xl font-bold text-[#007bff]">
-              {resultsData.filter(r => r.grade === 'B').length}명
-            </div>
-          </div>
-          <div className="p-2 sm:p-3 border border-gray-300 rounded-md text-center bg-[rgba(255,255,224,0.3)]">
-            <div className="text-xs sm:text-sm text-gray-500 mb-1">C등급 (70-79점)</div>
-            <div className="text-lg sm:text-xl font-bold text-[#f08c00]">
-              {resultsData.filter(r => r.grade === 'C').length}명
-            </div>
-          </div>
-          <div className="p-2 sm:p-3 border border-gray-300 rounded-md text-center bg-[rgba(255,192,203,0.3)]">
-            <div className="text-xs sm:text-sm text-gray-500 mb-1">D등급 (69점 이하)</div>
-            <div className="text-lg sm:text-xl font-bold text-[#6c757d]">
-              {resultsData.filter(r => r.grade === 'D').length}명
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="form-section mb-6 border-b border-[#E4D7C5] pb-4">
-        <h3 className="text-lg sm:text-xl font-medium mb-2 text-[#1A1F2C] border-b border-[#C53030] pb-2 inline-block">등급결정 및 동점자 처리</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-          <div>
-            <h4 className="font-medium mb-1 sm:mb-2 text-sm sm:text-base">등급결정 기준</h4>
-            <ul className="list-disc pl-4 sm:pl-5 space-y-0.5 sm:space-y-1 text-xs sm:text-sm">
-              <li>90점 이상: 대상 및 최우수상 후보</li>
-              <li>85점 이상: 우수상 후보</li>
-              <li>80점 이상: 특선 후보</li>
-              <li>75점 이상: 입선 후보</li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-medium mb-1 sm:mb-2 text-sm sm:text-base">동점자 발생시 처리방안</h4>
-            <ul className="list-disc pl-4 sm:pl-5 space-y-0.5 sm:space-y-1 text-xs sm:text-sm">
-              <li>조화(調和) 점수가 높은 작품우선</li>
-              <li>장법(章法) 점수가 높은 작품우선</li>
-              <li>심사위원 간 협의를 통한 결정</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div className="form-section mb-6 border-b border-[#E4D7C5] pb-4">
-        <h3 className="text-lg sm:text-xl font-medium mb-2 text-[#1A1F2C] border-b border-[#C53030] pb-2 inline-block">심사결과 확정</h3>
-        <ol className="list-decimal pl-4 sm:pl-5 space-y-0.5 sm:space-y-1 text-xs sm:text-sm">
-          <li>심사위원장은 종합심사 결과를 이사장에게 보고한다.</li>
-          <li>이사회는 심사결과를 검토하고 최종 승인한다.</li>
-          <li>확정된 심사결과는 수상자에게 개별 통보하며, 협회 홈페이지에 게시한다.</li>
-        </ol>
-      </div>
-
-      <SectionFooter
+      
+      <SectionFooter 
         currentDate={currentDate}
         signature={judgeSignature}
         setSignature={setJudgeSignature}
-        signatureLabel="심사위원"
-        handlePdfDownload={handlePdfDownload}
         handleCsvExport={handleExportCsv}
         handleMarkdownDownload={handleDownloadMarkdown}
-        isPdfGenerating={isPdfGenerating}
+        isCsvGenerating={false}
         isMarkdownGenerating={isMarkdownGenerating}
       />
-    </section>
+    </div>
   );
 };
 
