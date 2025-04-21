@@ -2,17 +2,15 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Save, FileDown, FileText } from 'lucide-react';
+import { Save, FileText } from 'lucide-react';
 
 interface SectionFooterProps {
   currentDate: string;
   signature: string;
   setSignature: (value: string) => void;
   signatureLabel?: string;
-  handlePdfDownload: () => void;
   handleCsvExport: () => void;
   handleMarkdownDownload?: () => void;
-  isPdfGenerating?: boolean;
   isCsvGenerating?: boolean;
   isMarkdownGenerating?: boolean;
   copyrightYear?: number;
@@ -24,10 +22,8 @@ const SectionFooter: React.FC<SectionFooterProps> = ({
   signature,
   setSignature,
   signatureLabel = "심사위원",
-  handlePdfDownload,
   handleCsvExport,
   handleMarkdownDownload,
-  isPdfGenerating = false,
   isCsvGenerating = false,
   isMarkdownGenerating = false,
   copyrightYear = new Date().getFullYear(),
@@ -67,14 +63,6 @@ const SectionFooter: React.FC<SectionFooterProps> = ({
               {isMarkdownGenerating ? '생성 중...' : 'MD 다운로드'}
             </Button>
           )}
-          <Button 
-            onClick={handlePdfDownload}
-            disabled={isPdfGenerating}
-            className="bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm flex-1 sm:flex-initial h-9 sm:h-9 px-2 sm:px-3"
-          >
-            <FileDown className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-            {isPdfGenerating ? '생성 중...' : 'PDF 다운로드'}
-          </Button>
           <Button 
             onClick={handleCsvExport}
             disabled={isCsvGenerating}
