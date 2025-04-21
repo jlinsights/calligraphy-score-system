@@ -509,44 +509,13 @@ const FeedbackSection: React.FC = () => {
           currentDate={currentDate}
           signature={signatureName}
           setSignature={setSignatureName}
-          signatureLabel="심사위원장"
           handlePdfDownload={handleDownloadPDF}
           handleCsvExport={handleExportCSV}
+          handleMarkdownDownload={handleDownloadMarkdown}
           isPdfGenerating={isGeneratingPDF}
           isCsvGenerating={isExportingCSV}
+          isMarkdownGenerating={isExportingMarkdown}
         />
-        <div className="button-container">
-          <p className="copyright-footer">© 2024 (사)한국동양서예협회. All rights reserved.</p>
-          <div className="button-group">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleDownloadPDF}
-              disabled={isGeneratingPDF}
-            >
-              <FileDown className="mr-2 h-4 w-4" />
-              PDF 내보내기
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleExportCSV}
-              disabled={isExportingCSV}
-            >
-              <FileText className="mr-2 h-4 w-4" />
-              CSV 내보내기
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleDownloadMarkdown}
-              disabled={isExportingMarkdown}
-            >
-              <FileOutput className="mr-2 h-4 w-4" />
-              MD 내보내기
-            </Button>
-          </div>
-        </div>
       </div>
       
       <style>

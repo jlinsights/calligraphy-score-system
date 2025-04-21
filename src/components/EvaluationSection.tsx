@@ -152,7 +152,7 @@ const EvaluationSection = () => {
       csvContent += `조화와 창의성,15,${harmonyScore || 0}\n`;
       csvContent += `총점,100,${totalScore}\n\n`;
       
-      csvContent += `심사위원장:,${judgeSignature}`;
+      csvContent += `심사위원:,${judgeSignature}`;
       
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
@@ -300,42 +300,11 @@ const EvaluationSection = () => {
         setSignature={setJudgeSignature}
         handlePdfDownload={handlePdfDownload}
         handleCsvExport={handleCsvExport}
+        handleMarkdownDownload={handleDownloadMarkdown}
         isPdfGenerating={isPdfGenerating}
         isCsvGenerating={isCsvGenerating}
+        isMarkdownGenerating={isMarkdownGenerating}
       />
-      
-      <div className="button-container">
-        <p className="copyright-footer">© 2024 (사)한국동양서예협회. All rights reserved.</p>
-        <div className="button-group">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={handlePdfDownload}
-            disabled={isPdfGenerating}
-          >
-            <FileDown className="mr-2 h-4 w-4" />
-            PDF 내보내기
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={handleCsvExport}
-            disabled={isCsvGenerating}
-          >
-            <FileText className="mr-2 h-4 w-4" />
-            CSV 내보내기
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={handleDownloadMarkdown}
-            disabled={isMarkdownGenerating}
-          >
-            <FileOutput className="mr-2 h-4 w-4" />
-            MD 내보내기
-          </Button>
-        </div>
-      </div>
     </section>
   );
 };
