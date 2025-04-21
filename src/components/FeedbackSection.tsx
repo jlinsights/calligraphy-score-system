@@ -7,6 +7,7 @@ import html2canvas from 'html2canvas';
 import './FeedbackSection.css';
 import { FileDown, Save } from 'lucide-react';
 import SectionFooter from "@/components/ui/section-footer";
+import { generatePdfFromElement } from '@/utils/pdfUtils';
 
 const FeedbackSection: React.FC = () => {
   const [currentDate, setCurrentDate] = useState('');
@@ -80,163 +81,48 @@ const FeedbackSection: React.FC = () => {
   const handleDownloadPDF = async () => {
     try {
       setIsGeneratingPDF(true);
+      setIsPdfGenerating(true);
       
       if (!formRef.current) {
         alert('폼 정보를 가져올 수 없습니다.');
         setIsGeneratingPDF(false);
+        setIsPdfGenerating(false);
         return;
       }
 
-      // 원본 폼 요소 복제
-      const originalForm = formRef.current;
-      const clonedForm = originalForm.cloneNode(true) as HTMLElement;
-      
-      // 복제된 폼에 스타일 추가 - A4 사이즈에 맞게 설정
-      clonedForm.style.width = '210mm'; // A4 너비
-      clonedForm.style.minHeight = '297mm'; // A4 높이
-      clonedForm.style.padding = '20mm';
-      clonedForm.style.backgroundColor = 'white';
-      clonedForm.style.position = 'absolute';
-      clonedForm.style.left = '-9999px';
-      clonedForm.style.top = '0';
-      document.body.appendChild(clonedForm);
-
       // 버튼 컨테이너 숨기기
-      const buttonContainers = clonedForm.querySelectorAll('.button-container');
+      const buttonContainers = formRef.current.querySelectorAll('.button-container');
       buttonContainers.forEach(el => (el as HTMLElement).style.display = 'none');
-
-      // 텍스트영역의 값을 복제된 폼에 설정
-      const textareas = originalForm.querySelectorAll('textarea');
-      const clonedTextareas = clonedForm.querySelectorAll('textarea');
-      textareas.forEach((textarea, i) => {
-        if (clonedTextareas[i]) {
-          (clonedTextareas[i] as HTMLTextAreaElement).value = (textarea as HTMLTextAreaElement).value;
-          (clonedTextareas[i] as HTMLTextAreaElement).style.height = 'auto';
-          (clonedTextareas[i] as HTMLTextAreaElement).style.minHeight = '100px';
-          (clonedTextareas[i] as HTMLTextAreaElement).style.overflow = 'visible';
-          (clonedTextareas[i] as HTMLTextAreaElement).style.border = '1px solid #ddd';
-          (clonedTextareas[i] as HTMLTextAreaElement).style.padding = '8px';
-        }
-      });
-
-      // 이름 입력 영역 설정
-      const signatureInput = clonedForm.querySelector('#signature-name') as HTMLInputElement;
-      if (signatureInput) {
-        signatureInput.value = signatureName;
-      }
-
-      // PDF 생성 - A4 크기로 설정
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-        hotfixes: ['px_scaling'],
-      });
-
-      // 페이지 여백 설정
-      const margin = 20; // 20mm 여백
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const contentWidth = pdfWidth - (margin * 2);
-
-      try {
-        // html2canvas를 사용하여 복제된 폼을 이미지로 변환
-        const canvas = await html2canvas(clonedForm, {
-          scale: 2, // 해상도 향상
-          useCORS: true,
-          logging: false,
-          backgroundColor: '#ffffff'
-        });
-
-        // 캔버스를 이미지로 변환
-        const imgData = canvas.toDataURL('image/png');
-        
-        // 이미지 크기 계산
-        const imgWidth = contentWidth;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        
-        // PDF 제목 추가
-        pdf.setFontSize(16);
-        pdf.text('심사의견서', pdfWidth / 2, margin, { align: 'center' });
-        
-        // 페이지 나누기를 위한 계산
-        const pageContentHeight = pdfHeight - (margin * 2) - 10; // 제목 공간 고려
-        const ratio = canvas.width / imgWidth;
-        const pageCount = Math.ceil(imgHeight / pageContentHeight);
-        
-        // 첫 페이지는 제목 아래에 시작
-        let srcY = 0;
-        let yOffset = margin + 10; // 제목 아래 시작
-        
-        // 각 페이지별로 이미지의 일부분을 추가
-        for (let i = 0; i < pageCount; i++) {
-          if (i > 0) {
-            pdf.addPage();
-            yOffset = margin; // 두 번째 페이지부터는 상단 여백부터 시작
-          }
-          
-          // 현재 페이지에 표시할 이미지 높이 계산
-          const canvasHeight = Math.min(
-            (pageContentHeight * ratio),
-            canvas.height - srcY
-          );
-          
-          // 페이지에 맞는 이미지 높이
-          const destHeight = canvasHeight / ratio;
-          
-          // 이미지 추가
-          pdf.addImage(
-            imgData,
-            'PNG',
-            margin, // x 위치
-            yOffset, // y 위치
-            imgWidth, // 너비
-            destHeight, // 높이
-            null, // 별칭
-            'FAST', // 압축
-            0, // 회전
-            canvas.width, // 원본 너비
-            canvasHeight, // 원본 높이
-            srcY, // 원본 y 좌표
-            0 // 원본 x 좌표
-          );
-          
-          // 다음 페이지를 위한 소스 y 좌표 업데이트
-          srcY += canvasHeight;
-        }
-
-        // 페이지 하단에 날짜와 서명 추가
-        pdf.setFontSize(10);
-        const lastPage = pdf.getNumberOfPages();
-        pdf.setPage(lastPage);
-        const finalY = pdfHeight - (margin / 2);
-        pdf.text(`작성일: ${currentDate}`, margin, finalY);
-        pdf.text(`심사위원장: ${signatureName || '_______________'} (서명)`, pdfWidth - margin - 70, finalY);
-
-        // 현재 날짜로 파일명 생성
-        const today = new Date();
-        const dateStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
-        const fileName = `심사의견서_${dateStr}.pdf`;
-        
-        // PDF 저장
-        pdf.save(fileName);
-        
-        // 알림 표시
-        alert('심사의견서가 PDF로 저장되었습니다.');
-      } catch (canvasError) {
-        console.error('Canvas 생성 오류:', canvasError);
-        throw new Error('PDF 변환 과정에서 오류가 발생했습니다.');
-      } finally {
-        // 복제된 폼 제거
-        if (document.body.contains(clonedForm)) {
-          document.body.removeChild(clonedForm);
-        }
-      }
+      
+      formRef.current.classList.add('pdf-generating');
+      
+      // 파일명 생성
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const filename = `심사의견서_${year}${month}${day}.pdf`;
+      
+      // PDF 생성
+      await generatePdfFromElement(
+        formRef.current,
+        filename,
+        '심사의견서',
+        currentDate,
+        signatureName
+      );
+      
+      // 원상복구
+      buttonContainers.forEach(el => (el as HTMLElement).style.display = '');
+      formRef.current.classList.remove('pdf-generating');
+      
+      alert('심사의견서가 PDF로 저장되었습니다.');
     } catch (error) {
-      console.error('PDF 생성 오류:', error);
-      alert('PDF 생성 중 오류가 발생했습니다. 다시 시도해주세요.');
+      console.error('PDF 생성 중 오류 발생:', error);
+      alert('PDF 생성 중 오류가 발생했습니다.');
     } finally {
       setIsGeneratingPDF(false);
+      setIsPdfGenerating(false);
     }
   };
   

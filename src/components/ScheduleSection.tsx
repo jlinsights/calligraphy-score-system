@@ -5,6 +5,7 @@ import GradingGuidelines from './schedule/GradingGuidelines';
 import SectionFooter from "@/components/ui/section-footer";
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { generatePdfFromElement } from '@/utils/pdfUtils';
 
 const ScheduleSection = () => {
   const [judgeChair, setJudgeChair] = useState('');
@@ -46,120 +47,26 @@ const ScheduleSection = () => {
       const form = formRef.current;
       
       // 임시 스타일 설정 및 버튼 숨기기
-      const originalDisplay = form.style.display;
       form.classList.add('pdf-generating');
       
       const buttonContainers = form.querySelectorAll('.button-container');
       buttonContainers.forEach(el => (el as HTMLElement).style.display = 'none');
       
-      // 필요한 스타일 적용을 위한 클론 생성
-      const clone = form.cloneNode(true) as HTMLElement;
-      clone.style.position = 'absolute';
-      clone.style.left = '-9999px';
-      clone.style.background = 'white';
-      clone.style.width = '210mm'; // A4 width
-      clone.style.padding = '10mm';
-      document.body.appendChild(clone);
-      
-      // Canvas로 변환
-      const canvas = await html2canvas(clone, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
-      });
-      
-      // 임시 요소 및 스타일 제거
-      document.body.removeChild(clone);
-      buttonContainers.forEach(el => (el as HTMLElement).style.display = '');
-      form.classList.remove('pdf-generating');
-      form.style.display = originalDisplay;
+      // 파일명 생성
+      const filename = `심사일정표_${evalDate || new Date().toISOString().split('T')[0]}.pdf`;
       
       // PDF 생성
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
-      });
+      await generatePdfFromElement(
+        form,
+        filename,
+        '심사 일정표',
+        currentDate,
+        judgeSignature
+      );
       
-      // PDF 메타데이터 설정
-      pdf.setProperties({
-        title: `심사일정표_${evalDate || new Date().toISOString().split('T')[0]}`,
-        subject: '서예 작품 심사일정표',
-        author: '동양서예협회',
-        keywords: '심사일정표, 서예, 동양서예협회'
-      });
-      
-      // PDF 설정
-      const imgData = canvas.toDataURL('image/png');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const margin = 10;
-      const contentWidth = pdfWidth - (margin * 2);
-      
-      // 제목 추가
-      pdf.setFontSize(18);
-      pdf.text('심사 일정표', pdfWidth / 2, margin + 10, { align: 'center' });
-      
-      // 평가 정보 추가
-      pdf.setFontSize(10);
-      pdf.text(`심사 일시: ${evalDate}`, margin, margin + 20);
-      pdf.text(`심사 장소: ${evalCategory || '행사'}`, pdfWidth - margin - 50, margin + 20);
-      
-      // 콘텐츠 추가
-      const imgWidth = contentWidth;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
-      const pageContentHeight = pdfHeight - (margin * 2) - 30; // 제목과 정보, 마진 고려
-      const ratio = canvas.width / imgWidth;
-      const pageCount = Math.ceil(imgHeight / pageContentHeight);
-      
-      let srcY = 0;
-      let yOffset = margin + 30; // 제목+정보 아래부터 시작
-      
-      for (let i = 0; i < pageCount; i++) {
-        if (i > 0) {
-          pdf.addPage();
-          yOffset = margin;
-          
-          // 페이지 번호 추가
-          pdf.setFontSize(10);
-          pdf.text(`${i+1}/${pageCount}`, pdfWidth - margin, pdfHeight - 5);
-        }
-        
-        const canvasHeight = Math.min(
-          (pageContentHeight * ratio),
-          canvas.height - srcY
-        );
-        
-        const destHeight = canvasHeight / ratio;
-        
-        pdf.addImage(
-          imgData,
-          'PNG',
-          margin,
-          yOffset,
-          imgWidth,
-          destHeight,
-          `page-${i}`, // 고유 별칭 추가하여 캐시 문제 방지
-          'FAST'
-        );
-        
-        srcY += canvasHeight;
-      }
-      
-      // 마지막 페이지에 서명 추가
-      const lastPage = pdf.getNumberOfPages();
-      pdf.setPage(lastPage);
-      pdf.setFontSize(10);
-      
-      const finalY = pdfHeight - margin;
-      pdf.text(`작성일: ${currentDate}`, margin, finalY - 10);
-      pdf.text(`심사위원장: ${judgeSignature || '_______________'} (서명)`, pdfWidth - margin - 80, finalY - 10);
-      
-      // 파일 저장
-      const filename = `심사일정표_${evalDate || new Date().toISOString().split('T')[0]}.pdf`;
-      pdf.save(filename);
+      // 원상복구
+      buttonContainers.forEach(el => (el as HTMLElement).style.display = '');
+      form.classList.remove('pdf-generating');
       
       alert('심사 일정표가 PDF로 저장되었습니다.');
     } catch (error) {

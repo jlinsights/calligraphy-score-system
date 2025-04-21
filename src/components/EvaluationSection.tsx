@@ -6,6 +6,7 @@ import GradingGuidelines from '@/components/schedule/GradingGuidelines';
 import SectionFooter from "@/components/ui/section-footer";
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { generatePdfFromElement } from '@/utils/pdfUtils';
 
 const EvaluationSection = () => {
   const formRef = useRef<HTMLElement>(null);
@@ -21,6 +22,7 @@ const EvaluationSection = () => {
   const [compositionScore, setCompositionScore] = useState<number | null>(null);
   const [harmonyScore, setHarmonyScore] = useState<number | null>(null);
   const [totalScore, setTotalScore] = useState<number>(0);
+  const [isPdfGenerating, setIsPdfGenerating] = useState(false);
 
   useEffect(() => {
     generateSeriesNumber();
@@ -78,92 +80,44 @@ const EvaluationSection = () => {
   };
 
   const handlePdfDownload = async () => {
-    if (!formRef.current) return;
+    if (!formRef.current) {
+      alert("양식 요소를 찾을 수 없습니다.");
+      return;
+    }
+    
+    setIsPdfGenerating(true);
     
     try {
       const form = formRef.current;
+      
+      // 임시 스타일 설정 및 버튼 숨기기
       form.classList.add('pdf-generating');
       
       const buttonContainers = form.querySelectorAll('.button-container');
       buttonContainers.forEach(el => (el as HTMLElement).style.display = 'none');
       
-      const canvas = await html2canvas(form, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
-      });
+      // 파일명 생성
+      const filename = `심사표_${category || '전체'}_${artistName || '무제'}_${currentDate}.pdf`;
       
+      // PDF 생성
+      await generatePdfFromElement(
+        form,
+        filename,
+        '심사표',
+        currentDate,
+        judgeSignature
+      );
+      
+      // 원상복구
       buttonContainers.forEach(el => (el as HTMLElement).style.display = '');
-      
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
-      });
-      
-      const imgData = canvas.toDataURL('image/png');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const margin = 15;
-      const contentWidth = pdfWidth - (margin * 2);
-      
-      pdf.setFontSize(16);
-      pdf.text('심사표', pdfWidth / 2, margin, { align: 'center' });
-      
-      const imgWidth = contentWidth;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
-      const pageContentHeight = pdfHeight - (margin * 2) - 10;
-      const ratio = canvas.width / imgWidth;
-      const pageCount = Math.ceil(imgHeight / pageContentHeight);
-      
-      let srcY = 0;
-      let yOffset = margin + 10;
-      
-      for (let i = 0; i < pageCount; i++) {
-        if (i > 0) {
-          pdf.addPage();
-          yOffset = margin;
-        }
-        
-        const canvasHeight = Math.min(
-          (pageContentHeight * ratio),
-          canvas.height - srcY
-        );
-        
-        const destHeight = canvasHeight / ratio;
-        
-        pdf.addImage(
-          imgData,
-          'PNG',
-          margin,
-          yOffset,
-          imgWidth,
-          destHeight
-        );
-        
-        srcY += canvasHeight;
-      }
-      
-      const lastPage = pdf.getNumberOfPages();
-      pdf.setPage(lastPage);
-      const finalY = pdfHeight - (margin / 2);
-      pdf.setFontSize(10);
-      pdf.text(`작성일: ${currentDate}`, margin, finalY - 5);
-      pdf.text(`심사위원장: ${judgeSignature || '_______________'} (서명)`, pdfWidth - margin - 80, finalY - 5);
-      
-      const filename = `심사표_${category || '전체'}_${artistName || '무제'}_${new Date().toISOString().split('T')[0]}.pdf`;
-      pdf.save(filename);
+      form.classList.remove('pdf-generating');
       
       alert('심사표가 PDF로 저장되었습니다.');
     } catch (error) {
       console.error("PDF 생성 오류:", error);
       alert("PDF 파일을 생성하는 중 오류가 발생했습니다.");
     } finally {
-      if (formRef.current) {
-        formRef.current.classList.remove('pdf-generating');
-      }
+      setIsPdfGenerating(false);
     }
   };
 

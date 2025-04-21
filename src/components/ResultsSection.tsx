@@ -8,6 +8,7 @@ import { FileDown, Save, Plus, X } from 'lucide-react';
 import SectionFooter from "@/components/ui/section-footer";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { generatePdfFromElement } from '@/utils/pdfUtils';
 
 interface ResultRow {
   rowId: number;
@@ -31,7 +32,7 @@ const ResultsSection = () => {
   const [judgeSignature, setJudgeSignature] = useState('');
   const [currentDate, setCurrentDate] = useState('');
   const formRef = useRef<HTMLDivElement>(null);
-  const isGeneratingPdf = useRef(false);
+  const [isPdfGenerating, setIsPdfGenerating] = useState(false);
 
   useEffect(() => {
     setFormattedCurrentDate();
@@ -234,101 +235,44 @@ const ResultsSection = () => {
   };
 
   const handlePdfDownload = async () => {
-    if (!formRef.current || isGeneratingPdf.current) return;
+    if (!formRef.current) {
+      alert("폼 요소를 찾을 수 없습니다.");
+      return;
+    }
     
-    isGeneratingPdf.current = true;
+    setIsPdfGenerating(true);
     
     try {
       const form = formRef.current;
+      
+      // 임시 스타일 설정 및 버튼 숨기기
       form.classList.add('pdf-generating');
       
-      const canvas = await html2canvas(form, {
-        scale: 1.5,
-        useCORS: true,
-        logging: false,
-        onclone: (clonedDoc) => {
-          clonedDoc.querySelectorAll('.button-container, .add-row-button, .delete-row-btn').forEach(
-            el => el.remove()
-          );
-          
-          clonedDoc.querySelectorAll('input, select').forEach(input => {
-            input.setAttribute('style', 'border: none; background-color: transparent; padding: 0; margin: 0;');
-            (input as HTMLInputElement).readOnly = true;
-          });
-        }
-      });
+      const buttonContainers = form.querySelectorAll('.button-container');
+      buttonContainers.forEach(el => (el as HTMLElement).style.display = 'none');
       
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
-      });
+      // 파일명 생성
+      const filename = `심사결과표_${category || '전체'}_${evaluationDate || new Date().toISOString().split('T')[0]}.pdf`;
       
-      const imgData = canvas.toDataURL('image/png');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const margin = 15;
-      const contentWidth = pdfWidth - (margin * 2);
+      // PDF 생성
+      await generatePdfFromElement(
+        form,
+        filename,
+        '심사 결과표',
+        currentDate,
+        judgeSignature
+      );
       
-      pdf.setFontSize(16);
-      pdf.text('심사 결과 종합표', pdfWidth / 2, margin, { align: 'center' });
+      // 원상복구
+      buttonContainers.forEach(el => (el as HTMLElement).style.display = '');
+      form.classList.remove('pdf-generating');
       
-      pdf.setFontSize(10);
-      pdf.text(`심사 일시: ${evaluationDate}`, margin, margin + 10);
-      pdf.text(`심사 부문: ${category}`, margin, margin + 15);
-      
-      const imgWidth = contentWidth;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
-      const pageContentHeight = pdfHeight - (margin * 2) - 25;
-      const ratio = canvas.width / imgWidth;
-      const pageCount = Math.ceil(imgHeight / pageContentHeight);
-      
-      let srcY = 0;
-      let yOffset = margin + 20;
-      
-      for (let i = 0; i < pageCount; i++) {
-        if (i > 0) {
-          pdf.addPage();
-          yOffset = margin;
-        }
-        
-        const canvasHeight = Math.min(
-          (pageContentHeight * ratio),
-          canvas.height - srcY
-        );
-        
-        const destHeight = canvasHeight / ratio;
-        
-        pdf.addImage(
-          imgData,
-          'PNG',
-          margin,
-          yOffset,
-          imgWidth,
-          destHeight
-        );
-        
-        srcY += canvasHeight;
-      }
-      
-      const lastPage = pdf.getNumberOfPages();
-      pdf.setPage(lastPage);
-      const finalY = pdfHeight - (margin / 2);
-      pdf.text(`작성일: ${currentDate}`, margin, finalY);
-      pdf.text(`심사위원장: ${judgeSignature || '_______________'} (서명)`, pdfWidth - margin - 80, finalY);
-      
-      const filename = `심사결과종합표_${category || '전체'}_${evaluationDate || new Date().toISOString().split('T')[0]}.pdf`;
-      pdf.save(filename);
-      
+      alert('심사 결과표가 PDF로 저장되었습니다.');
     } catch (error) {
       console.error("PDF 생성 오류:", error);
       alert("PDF 파일을 생성하는 중 오류가 발생했습니다.");
     } finally {
-      if (formRef.current) {
-        formRef.current.classList.remove('pdf-generating');
-      }
-      isGeneratingPdf.current = false;
+      setIsPdfGenerating(false);
     }
   };
 
@@ -549,7 +493,7 @@ const ResultsSection = () => {
         signatureLabel="심사위원"
         handlePdfDownload={handlePdfDownload}
         handleCsvExport={handleExportCsv}
-        isPdfGenerating={isGeneratingPdf.current}
+        isPdfGenerating={isPdfGenerating}
       />
     </section>
   );
