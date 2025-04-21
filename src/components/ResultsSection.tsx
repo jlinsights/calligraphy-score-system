@@ -4,11 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileDown, Save, Plus, X } from 'lucide-react';
+import { FileDown, Save, Plus, X, FileText, FileOutput } from 'lucide-react';
 import SectionFooter from "@/components/ui/section-footer";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { generatePdfFromElement } from '@/utils/pdfUtils';
+import TurndownService from 'turndown';
 
 interface ResultRow {
   rowId: number;
@@ -33,6 +34,7 @@ const ResultsSection = () => {
   const [currentDate, setCurrentDate] = useState('');
   const formRef = useRef<HTMLDivElement>(null);
   const [isPdfGenerating, setIsPdfGenerating] = useState(false);
+  const [isMarkdownGenerating, setIsMarkdownGenerating] = useState(false);
 
   useEffect(() => {
     setFormattedCurrentDate();
@@ -231,6 +233,84 @@ const ResultsSection = () => {
     } catch (error) {
       console.error("CSV 생성 오류:", error);
       alert("CSV 파일을 생성하는 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handleDownloadMarkdown = () => {
+    try {
+      setIsMarkdownGenerating(true);
+      
+      // 마크다운 콘텐츠 생성
+      let markdownContent = `# 심사결과종합표\n\n`;
+      markdownContent += `심사 일시: ${evaluationDate}\n`;
+      markdownContent += `심사 부문: ${category}\n`;
+      markdownContent += `작성일: ${currentDate}\n\n`;
+      
+      // 테이블 헤더
+      markdownContent += `| 번호 | 작가 | 작품명 | 심사1 | 심사2 | 심사3 | 평균 | 순위 | 등급 | 비고 |\n`;
+      markdownContent += `|------|------|--------|------|------|------|------|------|------|------|\n`;
+      
+      // 데이터 행 추가
+      resultsData.forEach(row => {
+        markdownContent += `| ${row.displayId} | ${row.artist} | ${row.title} | ${row.score1} | ${row.score2} | ${row.score3} | ${row.average !== null ? row.average : ''} | ${row.rank !== null ? row.rank : ''} | ${row.grade} | ${row.remarks} |\n`;
+      });
+      
+      // 등급별 분포
+      markdownContent += `\n## 수상 등급별 분포\n\n`;
+      markdownContent += `- A등급 (90점 이상): ${resultsData.filter(r => r.grade === 'A').length}명\n`;
+      markdownContent += `- B등급 (80-89점): ${resultsData.filter(r => r.grade === 'B').length}명\n`;
+      markdownContent += `- C등급 (70-79점): ${resultsData.filter(r => r.grade === 'C').length}명\n`;
+      markdownContent += `- D등급 (69점 이하): ${resultsData.filter(r => r.grade === 'D').length}명\n\n`;
+      
+      // 등급결정 기준
+      markdownContent += `## 등급결정 및 동점자 처리\n\n`;
+      markdownContent += `### 등급결정 기준\n\n`;
+      markdownContent += `- 90점 이상: 대상 및 최우수상 후보\n`;
+      markdownContent += `- 85점 이상: 우수상 후보\n`;
+      markdownContent += `- 80점 이상: 특선 후보\n`;
+      markdownContent += `- 75점 이상: 입선 후보\n\n`;
+      
+      // 동점자 처리
+      markdownContent += `### 동점자 발생시 처리방안\n\n`;
+      markdownContent += `- 조화(調和) 점수가 높은 작품우선\n`;
+      markdownContent += `- 장법(章法) 점수가 높은 작품우선\n`;
+      markdownContent += `- 심사위원 간 협의를 통한 결정\n\n`;
+      
+      // 심사결과 확정
+      markdownContent += `## 심사결과 확정\n\n`;
+      markdownContent += `1. 심사위원장은 종합심사 결과를 이사장에게 보고한다.\n`;
+      markdownContent += `2. 이사회는 심사결과를 검토하고 최종 승인한다.\n`;
+      markdownContent += `3. 확정된 심사결과는 수상자에게 개별 통보하며, 협회 홈페이지에 게시한다.\n\n`;
+      
+      markdownContent += `심사위원: ${judgeSignature}`;
+      
+      // 파일 다운로드
+      const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      
+      // 파일명 생성
+      const filename = `심사결과표_${category || '전체'}_${evaluationDate || new Date().toISOString().split('T')[0]}.md`;
+      link.setAttribute('download', filename);
+      
+      // 링크 클릭하여 다운로드
+      document.body.appendChild(link);
+      link.click();
+      
+      // 임시 요소 제거
+      setTimeout(() => {
+        if (document.body.contains(link)) {
+          document.body.removeChild(link);
+        }
+        URL.revokeObjectURL(url);
+        setIsMarkdownGenerating(false);
+        alert('심사결과표를 마크다운 파일로 내보냈습니다.');
+      }, 100);
+    } catch (error) {
+      console.error('마크다운 내보내기 오류:', error);
+      setIsMarkdownGenerating(false);
+      alert('마크다운 파일을 생성하는 중 오류가 발생했습니다.');
     }
   };
 
@@ -505,6 +585,38 @@ const ResultsSection = () => {
         handleCsvExport={handleExportCsv}
         isPdfGenerating={isPdfGenerating}
       />
+      
+      <div className="button-container">
+        <p className="copyright-footer">© 2024 (사)한국동양서예협회. All rights reserved.</p>
+        <div className="button-group">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handlePdfDownload}
+            disabled={isPdfGenerating}
+          >
+            <FileDown className="mr-2 h-4 w-4" />
+            PDF 내보내기
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleExportCsv}
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            CSV 내보내기
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleDownloadMarkdown}
+            disabled={isMarkdownGenerating}
+          >
+            <FileOutput className="mr-2 h-4 w-4" />
+            MD 내보내기
+          </Button>
+        </div>
+      </div>
     </section>
   );
 };

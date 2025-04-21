@@ -5,9 +5,10 @@ import { Input } from "@/components/ui/input";
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import './FeedbackSection.css';
-import { FileDown, Save } from 'lucide-react';
+import { FileDown, Save, FileText, FileOutput } from 'lucide-react';
 import SectionFooter from "@/components/ui/section-footer";
 import { generatePdfFromElement } from '@/utils/pdfUtils';
+import TurndownService from 'turndown';
 
 const FeedbackSection: React.FC = () => {
   const [currentDate, setCurrentDate] = useState('');
@@ -15,6 +16,7 @@ const FeedbackSection: React.FC = () => {
   const [isPdfGenerating, setIsPdfGenerating] = useState(false);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState<boolean>(false);
   const [isExportingCSV, setIsExportingCSV] = useState<boolean>(false);
+  const [isExportingMarkdown, setIsExportingMarkdown] = useState<boolean>(false);
   
   const formRef = useRef<HTMLDivElement>(null);
   
@@ -236,6 +238,92 @@ const FeedbackSection: React.FC = () => {
     }
   };
 
+  const handleDownloadMarkdown = () => {
+    try {
+      setIsExportingMarkdown(true);
+      
+      if (!formRef.current) {
+        alert('폼 정보를 가져올 수 없습니다.');
+        setIsExportingMarkdown(false);
+        return;
+      }
+      
+      // 마크다운 변환을 위한 TurndownService 인스턴스 생성
+      const turndownService = new TurndownService({
+        headingStyle: 'atx',
+        codeBlockStyle: 'fenced'
+      });
+      
+      // 텍스트 내용 업데이트
+      updatePrintContent();
+      
+      // 마크다운 콘텐츠 생성
+      let markdownContent = `# 심사의견서\n\n`;
+      markdownContent += `작성일: ${currentDate}\n\n`;
+      markdownContent += `## 전체 심사평\n\n${overallOpinion}\n\n`;
+      
+      markdownContent += `## 부문별 심사의견\n\n`;
+      markdownContent += `### 한글 부문\n\n${hangulOpinion}\n\n`;
+      markdownContent += `### 한문 부문\n\n${hanmunOpinion}\n\n`;
+      markdownContent += `### 현대서예 부문\n\n${modernOpinion}\n\n`;
+      markdownContent += `### 캘리그래피 부문\n\n${calligraphyOpinion}\n\n`;
+      markdownContent += `### 전각, 서각 부문\n\n${sealOpinion}\n\n`;
+      markdownContent += `### 문인화, 동양화, 민화 부문\n\n${paintingOpinion}\n\n`;
+      
+      markdownContent += `## 심사총평 및 제언\n\n${finalOpinion}\n\n`;
+      
+      markdownContent += `## 등급결정 및 동점자 처리\n\n`;
+      markdownContent += `### 등급결정 기준\n\n`;
+      markdownContent += `- 90점 이상: 대상 및 최우수상 후보\n`;
+      markdownContent += `- 85점 이상: 우수상 후보\n`;
+      markdownContent += `- 80점 이상: 특선 후보\n`;
+      markdownContent += `- 75점 이상: 입선 후보\n\n`;
+      
+      markdownContent += `### 동점자 발생시 처리방안\n\n`;
+      markdownContent += `- 조화(調和) 점수가 높은 작품우선\n`;
+      markdownContent += `- 장법(章法) 점수가 높은 작품우선\n`;
+      markdownContent += `- 심사위원 간 협의를 통한 결정\n\n`;
+      
+      markdownContent += `## 심사결과 확정\n\n`;
+      markdownContent += `1. 심사위원장은 종합심사 결과를 이사장에게 전달합니다.\n`;
+      markdownContent += `2. 이사회는 심사결과를 검토하고 최종 승인합니다.\n`;
+      markdownContent += `3. 확정된 심사결과는 수상자에게 개별 통보하며, 협회 홈페이지에 게시합니다.\n\n`;
+      
+      markdownContent += `심사위원장: ${signatureName}`;
+      
+      // 파일 다운로드
+      const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      
+      // 현재 날짜로 파일명 생성
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      link.setAttribute('download', `심사의견서_${year}${month}${day}.md`);
+      
+      // 링크 클릭하여 다운로드
+      document.body.appendChild(link);
+      link.click();
+      
+      // 임시 요소 제거 (타임아웃으로 지연 처리)
+      setTimeout(() => {
+        if (document.body.contains(link)) {
+          document.body.removeChild(link);
+        }
+        URL.revokeObjectURL(url);
+        setIsExportingMarkdown(false);
+        alert('심사의견을 마크다운 파일로 내보냈습니다.');
+      }, 100);
+    } catch (error) {
+      console.error('마크다운 내보내기 오류:', error);
+      setIsExportingMarkdown(false);
+      alert('마크다운 파일을 생성하는 중 오류가 발생했습니다.');
+    }
+  };
+
   return (
     <section className="calligraphy-section" id="feedback-form" ref={formRef}>
       <h2 className="calligraphy-section-title">심사의견서</h2>
@@ -427,6 +515,38 @@ const FeedbackSection: React.FC = () => {
           isPdfGenerating={isGeneratingPDF}
           isCsvGenerating={isExportingCSV}
         />
+        <div className="button-container">
+          <p className="copyright-footer">© 2024 (사)한국동양서예협회. All rights reserved.</p>
+          <div className="button-group">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleDownloadPDF}
+              disabled={isGeneratingPDF}
+            >
+              <FileDown className="mr-2 h-4 w-4" />
+              PDF 내보내기
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleExportCSV}
+              disabled={isExportingCSV}
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              CSV 내보내기
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleDownloadMarkdown}
+              disabled={isExportingMarkdown}
+            >
+              <FileOutput className="mr-2 h-4 w-4" />
+              MD 내보내기
+            </Button>
+          </div>
+        </div>
       </div>
       
       <style>
