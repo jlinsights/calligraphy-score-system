@@ -89,12 +89,22 @@ const FeedbackSection: React.FC = () => {
         setIsPdfGenerating(false);
         return;
       }
-
-      // 버튼 컨테이너 숨기기
-      const buttonContainers = formRef.current.querySelectorAll('.button-container');
-      buttonContainers.forEach(el => (el as HTMLElement).style.display = 'none');
       
-      formRef.current.classList.add('pdf-generating');
+      const form = formRef.current;
+      
+      // PDF 생성을 위한 스타일 정리
+      const buttonContainers = form.querySelectorAll('.button-container');
+      const tempStyles: { el: HTMLElement; display: string }[] = [];
+      
+      // 버튼 컨테이너 숨기기 및 원래 스타일 저장
+      buttonContainers.forEach(el => {
+        const htmlEl = el as HTMLElement;
+        tempStyles.push({ el: htmlEl, display: htmlEl.style.display });
+        htmlEl.style.display = 'none';
+      });
+      
+      // PDF 생성을 위한 클래스 추가
+      form.classList.add('pdf-generating');
       
       // 파일명 생성
       const now = new Date();
@@ -103,18 +113,23 @@ const FeedbackSection: React.FC = () => {
       const day = String(now.getDate()).padStart(2, '0');
       const filename = `심사의견서_${year}${month}${day}.pdf`;
       
+      // 텍스트 내용 업데이트
+      updatePrintContent();
+      
       // PDF 생성
       await generatePdfFromElement(
-        formRef.current,
+        form,
         filename,
         '심사의견서',
         currentDate,
         signatureName
       );
       
-      // 원상복구
-      buttonContainers.forEach(el => (el as HTMLElement).style.display = '');
-      formRef.current.classList.remove('pdf-generating');
+      // 원래 스타일로 복원
+      tempStyles.forEach(item => {
+        item.el.style.display = item.display;
+      });
+      form.classList.remove('pdf-generating');
       
       alert('심사의견서가 PDF로 저장되었습니다.');
     } catch (error) {

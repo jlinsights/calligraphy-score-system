@@ -42,30 +42,40 @@ export const generatePdfFromElement = async (
     // 기존 스타일 저장
     const originalStyle = element.style.cssText;
     
-    // 스타일 추가 (한글 폰트 적용)
-    element.style.cssText = `
+    // HTML 요소 복제 및 스타일 적용
+    const clonedElement = element.cloneNode(true) as HTMLElement;
+    clonedElement.style.cssText = `
       ${originalStyle}
       font-family: 'Malgun Gothic', 'Gulim', sans-serif;
       -webkit-font-smoothing: antialiased;
+      width: ${CONTENT_WIDTH}mm;
+      background-color: white;
+      color: black;
     `;
     
-    // PDF 객체 생성 (A4 사이즈, 세로 방향)
-    const pdf = new jsPDF('p', 'mm', 'a4');
+    // 숨겨진 위치에 복제본 추가
+    clonedElement.style.position = 'absolute';
+    clonedElement.style.left = '-9999px';
+    clonedElement.style.top = '0';
+    document.body.appendChild(clonedElement);
     
-    // 기본 설정
-    pdf.setTextColor(0, 0, 0);
-    
-    // Canvas로 변환
-    const canvas = await html2canvas(element, {
-      scale: 2, // 해상도 향상
+    // Canvas로 변환 (해상도 향상)
+    const canvas = await html2canvas(clonedElement, {
+      scale: 3, // 해상도 증가
       useCORS: true,
       logging: false,
       allowTaint: true,
       backgroundColor: '#ffffff'
     });
     
-    // 원래 스타일로 복원
-    element.style.cssText = originalStyle;
+    // 복제본 제거
+    document.body.removeChild(clonedElement);
+    
+    // PDF 객체 생성 (A4 사이즈, 세로 방향)
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    
+    // PDF 기본 설정
+    pdf.setTextColor(0, 0, 0);
     
     // Canvas 이미지 데이터
     const imgData = canvas.toDataURL('image/png');
@@ -77,6 +87,11 @@ export const generatePdfFromElement = async (
     // 페이지 수 계산
     const pageCount = Math.ceil(imgHeight / CONTENT_HEIGHT);
     
+    // 이미지 총 높이(px)
+    const totalCanvasHeight = canvas.height;
+    // 각 페이지당 이미지 높이(px)
+    const pageCanvasHeight = totalCanvasHeight / pageCount;
+    
     // 여러 페이지에 나눠서 그리기
     for (let i = 0; i < pageCount; i++) {
       // 첫 페이지가 아니면 새 페이지 추가
@@ -84,33 +99,43 @@ export const generatePdfFromElement = async (
         pdf.addPage();
       }
       
-      // 현재 페이지에 그릴 이미지의 시작 위치 계산
-      const sourceY = CONTENT_HEIGHT * i * (canvas.width / imgWidth);
+      // 현재 페이지에 그릴 이미지의 시작 위치 계산 (픽셀 단위)
+      const sourceY = Math.floor(i * pageCanvasHeight);
       
-      // 현재 페이지에 그릴 이미지의 높이 계산
-      let sourceHeight;
-      if (i === pageCount - 1) {
-        // 마지막 페이지
-        sourceHeight = canvas.height - sourceY;
-      } else {
-        // 중간 페이지
-        sourceHeight = CONTENT_HEIGHT * (canvas.width / imgWidth);
-      }
+      // 현재 페이지에 그릴 이미지의 높이 계산 (픽셀 단위)
+      const sourceHeight = Math.min(pageCanvasHeight, totalCanvasHeight - sourceY);
       
-      // 현재 페이지에 그릴 이미지 높이 (mm 단위)
+      // PDF에 이미지 추가 (임시 캔버스 활용)
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = canvas.width;
+      tempCanvas.height = sourceHeight;
+      
+      const tempCtx = tempCanvas.getContext('2d');
+      if (!tempCtx) continue;
+      
+      // 원본 캔버스에서 필요한 부분만 새 캔버스에 그림
+      tempCtx.drawImage(
+        canvas, 
+        0, sourceY, 
+        canvas.width, sourceHeight, 
+        0, 0, 
+        canvas.width, sourceHeight
+      );
+      
+      // 추출한 이미지 데이터
+      const pageImgData = tempCanvas.toDataURL('image/png');
+      
+      // 페이지 이미지의 PDF 높이 계산
       const pageImgHeight = (sourceHeight * imgWidth) / canvas.width;
       
-      // 이미지 그리기 - 클리핑하여 해당 페이지 부분만 표시
+      // PDF에 이미지 추가
       pdf.addImage(
-        imgData, // 이미지 데이터
-        'PNG',   // 포맷
-        MARGIN_LEFT, // x 위치
-        MARGIN_TOP,  // y 위치
-        imgWidth,    // 너비
-        pageImgHeight, // 높이 (한 페이지 분량만)
-        undefined,  // 별칭
-        'FAST',     // 압축 방식
-        0           // 회전
+        pageImgData,
+        'PNG',
+        MARGIN_LEFT,
+        MARGIN_TOP,
+        imgWidth,
+        pageImgHeight
       );
       
       // 첫 페이지에 제목 추가
@@ -119,26 +144,28 @@ export const generatePdfFromElement = async (
         pdf.text(title, A4_WIDTH / 2, MARGIN_TOP - 2, { align: 'center' });
       }
       
-      // 마지막 페이지에 날짜와 서명 추가
-      if (i === pageCount - 1) {
-        if (date) {
-          pdf.setFontSize(10);
-          pdf.text(`날짜: ${date}`, A4_WIDTH - MARGIN_RIGHT, A4_HEIGHT - MARGIN_BOTTOM + 5, {
-            align: 'right'
-          });
-        }
-        
-        if (signature) {
-          pdf.setFontSize(10);
-          pdf.text(`서명: ${signature}`, A4_WIDTH - MARGIN_RIGHT, A4_HEIGHT - MARGIN_BOTTOM + 10, {
-            align: 'right'
-          });
-        }
-      }
-      
       // 페이지 번호 추가
       pdf.setFontSize(8);
       pdf.text(`${i + 1} / ${pageCount}`, A4_WIDTH / 2, A4_HEIGHT - 5, { align: 'center' });
+    }
+    
+    // 마지막 페이지에 날짜와 서명 추가
+    if (date || signature) {
+      pdf.setPage(pageCount); // 마지막 페이지로 이동
+      
+      if (date) {
+        pdf.setFontSize(10);
+        pdf.text(`날짜: ${date}`, A4_WIDTH - MARGIN_RIGHT, A4_HEIGHT - MARGIN_BOTTOM + 5, {
+          align: 'right'
+        });
+      }
+      
+      if (signature) {
+        pdf.setFontSize(10);
+        pdf.text(`서명: ${signature}`, A4_WIDTH - MARGIN_RIGHT, A4_HEIGHT - MARGIN_BOTTOM + 10, {
+          align: 'right'
+        });
+      }
     }
     
     // PDF 저장

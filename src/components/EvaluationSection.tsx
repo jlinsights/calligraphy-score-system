@@ -90,11 +90,19 @@ const EvaluationSection = () => {
     try {
       const form = formRef.current;
       
-      // 임시 스타일 설정 및 버튼 숨기기
-      form.classList.add('pdf-generating');
-      
+      // PDF 생성을 위한 스타일 정리
       const buttonContainers = form.querySelectorAll('.button-container');
-      buttonContainers.forEach(el => (el as HTMLElement).style.display = 'none');
+      const tempStyles: { el: HTMLElement; display: string }[] = [];
+      
+      // 버튼 컨테이너 숨기기 및 원래 스타일 저장
+      buttonContainers.forEach(el => {
+        const htmlEl = el as HTMLElement;
+        tempStyles.push({ el: htmlEl, display: htmlEl.style.display });
+        htmlEl.style.display = 'none';
+      });
+      
+      // PDF 생성을 위한 클래스 추가
+      form.classList.add('pdf-generating');
       
       // 파일명 생성
       const filename = `심사표_${category || '전체'}_${artistName || '무제'}_${currentDate}.pdf`;
@@ -108,8 +116,10 @@ const EvaluationSection = () => {
         judgeSignature
       );
       
-      // 원상복구
-      buttonContainers.forEach(el => (el as HTMLElement).style.display = '');
+      // 원래 스타일로 복원
+      tempStyles.forEach(item => {
+        item.el.style.display = item.display;
+      });
       form.classList.remove('pdf-generating');
       
       alert('심사표가 PDF로 저장되었습니다.');
