@@ -65,17 +65,91 @@ const ScheduleSection = () => {
       // PDF 생성을 위한 클래스 추가
       form.classList.add('pdf-generating');
       
-      // 파일명 생성
-      const filename = `심사일정표_${evalDate || new Date().toISOString().split('T')[0]}.pdf`;
+      // A4 크기 설정 (210 x 297 mm)
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
       
-      // PDF 생성
-      await generatePdfFromElement(
-        form,
-        filename,
-        '심사 일정표',
-        currentDate,
-        judgeSignature
-      );
+      // 여백 설정
+      const margin = {
+        top: 10,
+        right: 10,
+        bottom: 10,
+        left: 10
+      };
+      
+      // 콘텐츠 너비 계산
+      const pageWidth = 210;
+      const contentWidth = pageWidth - margin.left - margin.right;
+      
+      try {
+        // html2canvas로 HTML을 이미지로 변환
+        const canvas = await html2canvas(form, {
+          scale: 2, // 해상도를 높이기 위한 스케일 설정
+          useCORS: true,
+          logging: false,
+          allowTaint: true,
+        });
+        
+        const imgData = canvas.toDataURL('image/png');
+        const imgWidth = contentWidth;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        
+        // 콘텐츠 높이에 따라 페이지 수 계산
+        const pageHeight = 297 - margin.top - margin.bottom;
+        const pageCount = Math.ceil(imgHeight / pageHeight);
+        
+        // 제목 추가
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(16);
+        pdf.text('심사 일정표', pageWidth / 2, margin.top + 10, { align: 'center' });
+        
+        // 이미지 추가 및 페이지 처리
+        for (let i = 0; i < pageCount; i++) {
+          if (i > 0) {
+            pdf.addPage();
+          }
+          
+          const srcY = i * pageHeight;
+          const sliceHeight = Math.min(pageHeight, imgHeight - srcY);
+          
+          // 크롭핑을 사용하여 이미지의 특정 부분만 가져오기
+          pdf.addImage(
+            imgData,
+            'PNG',
+            margin.left,
+            margin.top + 20,
+            imgWidth,
+            sliceHeight,
+            undefined, // alias
+            'FAST', // compression
+            srcY // srcY - 이미지에서 크롭할 Y 위치
+          );
+          
+          // 마지막 페이지에 푸터 추가
+          if (i === pageCount - 1) {
+            const footerY = Math.min(margin.top + 20 + sliceHeight + 10, 297 - margin.bottom - 10);
+            pdf.setFontSize(10);
+            pdf.text(`날짜: ${currentDate}`, margin.left, footerY);
+            if (judgeSignature) {
+              pdf.text(`심사위원장: ${judgeSignature}`, pageWidth - margin.right, footerY, { align: 'right' });
+            }
+          }
+        }
+        
+        // 파일명 생성
+        const filename = `심사일정표_${evalCategory || '전체'}_${evalDate || new Date().toISOString().split('T')[0]}.pdf`;
+        
+        // PDF 저장
+        pdf.save(filename);
+        
+        alert('심사 일정표가 PDF로 저장되었습니다.');
+      } catch (err) {
+        console.error('Canvas 생성 오류:', err);
+        throw err;
+      }
       
       // 원래 스타일로 복원
       tempStyles.forEach(item => {
@@ -83,7 +157,6 @@ const ScheduleSection = () => {
       });
       form.classList.remove('pdf-generating');
       
-      alert('심사 일정표가 PDF로 저장되었습니다.');
     } catch (error) {
       console.error("PDF 생성 오류:", error);
       alert("PDF 파일을 생성하는 중 오류가 발생했습니다.");
