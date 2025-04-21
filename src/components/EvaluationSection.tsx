@@ -6,7 +6,7 @@ import GradingGuidelines from '@/components/schedule/GradingGuidelines';
 import SectionFooter from "@/components/ui/section-footer";
 import TurndownService from 'turndown';
 import { Button } from '@/components/ui/button';
-import { FileText, FileOutput } from 'lucide-react';
+import { FileText, FileOutput, Save, AlertCircle } from 'lucide-react';
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import { Input } from "./ui/input";
@@ -14,6 +14,24 @@ import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { DownloadIcon, FileIcon } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { toast } from "./ui/use-toast";
+
+// 심사 결과 인터페이스 정의
+interface EvaluationResult {
+  id: string;
+  date: string;
+  category: string;
+  artistName: string;
+  workTitle: string;
+  pointsScore: number | null;
+  structureScore: number | null;
+  compositionScore: number | null;
+  harmonyScore: number | null;
+  totalScore: number;
+  judgeSignature: string;
+  timestamp: number;
+}
 
 const EvaluationSection = () => {
   const formRef = useRef<HTMLElement>(null);
@@ -34,15 +52,25 @@ const EvaluationSection = () => {
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [isExportingCsv, setIsExportingCsv] = useState(false);
   const [isExportingMarkdown, setIsExportingMarkdown] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
   useEffect(() => {
     generateSeriesNumber();
     setFormattedCurrentDate();
+    loadSignatureFromLocalStorage();
   }, []);
 
   useEffect(() => {
     calculateTotalScore();
   }, [pointsScore, structureScore, compositionScore, harmonyScore]);
+
+  const loadSignatureFromLocalStorage = () => {
+    const savedSignature = localStorage.getItem('judgeSignature');
+    if (savedSignature) {
+      setJudgeSignature(savedSignature);
+    }
+  };
 
   const generateSeriesNumber = () => {
     const now = new Date();
@@ -90,6 +118,76 @@ const EvaluationSection = () => {
     }
   };
 
+  // 심사 결과를 로컬 스토리지에 저장하는 함수
+  const saveToLocalStorage = () => {
+    if (!category || !artistName || !workTitle) {
+      alert('부문, 작가명, 작품명은 필수 입력사항입니다.');
+      return;
+    }
+
+    if (pointsScore === null || structureScore === null || compositionScore === null || harmonyScore === null) {
+      alert('모든 항목의 점수를 입력해 주세요.');
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      // 저장할 결과 데이터 생성
+      const evaluationResult: EvaluationResult = {
+        id: seriesNumber,
+        date: currentDate,
+        category,
+        artistName,
+        workTitle,
+        pointsScore,
+        structureScore,
+        compositionScore,
+        harmonyScore,
+        totalScore,
+        judgeSignature,
+        timestamp: new Date().getTime(),
+      };
+
+      // 기존 데이터 가져오기
+      const existingDataStr = localStorage.getItem('evaluationResults');
+      const existingData: EvaluationResult[] = existingDataStr ? JSON.parse(existingDataStr) : [];
+
+      // 새 데이터 추가
+      existingData.push(evaluationResult);
+
+      // 로컬 스토리지에 저장
+      localStorage.setItem('evaluationResults', JSON.stringify(existingData));
+
+      // 심사위원 서명 저장
+      localStorage.setItem('judgeSignature', judgeSignature);
+
+      // 성공 알림 표시
+      setShowSuccessAlert(true);
+      setTimeout(() => setShowSuccessAlert(false), 3000);
+
+      // 새로운 심사표를 위해 입력 필드 초기화
+      resetForm();
+    } catch (error) {
+      console.error('저장 중 오류 발생:', error);
+      alert('심사 결과를 저장하는 중 오류가 발생했습니다.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const resetForm = () => {
+    generateSeriesNumber(); // 새 번호 생성
+    setArtistName('');
+    setWorkTitle('');
+    setPointsScore(null);
+    setStructureScore(null);
+    setCompositionScore(null);
+    setHarmonyScore(null);
+    setTotalScore(0);
+    // 부문과 심사위원 서명은 유지
+  };
+
   const handleCsvExport = () => {
     try {
       setIsCsvGenerating(true);
@@ -120,6 +218,23 @@ const EvaluationSection = () => {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
+
+      // 심사 결과 저장 호출
+      if (category && artistName && workTitle && 
+          pointsScore !== null && structureScore !== null && 
+          compositionScore !== null && harmonyScore !== null) {
+        saveToLocalStorage();
+      }
+      
+      // 저장 후 심사결과종합표로 이동
+      setTimeout(() => {
+        window.location.href = '/results';
+        toast({
+          title: "심사결과종합표로 이동",
+          description: "심사 결과를 저장하고 심사결과종합표로 이동합니다.",
+          duration: 3000,
+        });
+      }, 1000);
       
     } catch (error) {
       console.error("CSV 생성 오류:", error);
@@ -175,6 +290,23 @@ const EvaluationSection = () => {
       document.body.removeChild(downloadLink);
       URL.revokeObjectURL(url);
       
+      // 심사 결과 저장 호출
+      if (category && artistName && workTitle && 
+          pointsScore !== null && structureScore !== null && 
+          compositionScore !== null && harmonyScore !== null) {
+        saveToLocalStorage();
+      }
+      
+      // 저장 후 심사결과종합표로 이동
+      setTimeout(() => {
+        window.location.href = '/results';
+        toast({
+          title: "심사결과종합표로 이동",
+          description: "심사 결과를 저장하고 심사결과종합표로 이동합니다.",
+          duration: 3000,
+        });
+      }, 1000);
+      
     } catch (error) {
       console.error('Markdown 다운로드 오류:', error);
     } finally {
@@ -210,6 +342,16 @@ const EvaluationSection = () => {
     <section className="calligraphy-section" id="evaluation-score-form" ref={formRef}>
       <h2 className="calligraphy-section-title">심사표</h2>
       
+      {showSuccessAlert && (
+        <Alert className="mb-4 bg-green-50 border-green-500">
+          <AlertCircle className="h-4 w-4 text-green-600" />
+          <AlertTitle className="text-green-600">저장 완료!</AlertTitle>
+          <AlertDescription className="text-green-700">
+            심사 결과가 성공적으로 저장되었습니다. 심사결과종합표에서 확인할 수 있습니다.
+          </AlertDescription>
+        </Alert>
+      )}
+      
       <EvaluationHeader 
         seriesNumber={seriesNumber}
         category={category}
@@ -234,6 +376,27 @@ const EvaluationSection = () => {
 
       <GradingGuidelines />
 
+      <div className="button-container mt-6 flex flex-wrap justify-center gap-2 sm:gap-4">
+        <Button
+          onClick={saveToLocalStorage}
+          disabled={isSaving}
+          className="min-w-[120px] sm:min-w-[160px] h-8 sm:h-10 text-xs sm:text-sm bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          <Save className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+          {isSaving ? '저장 중...' : '심사 결과 저장'}
+        </Button>
+        
+        <Button 
+          variant="outline" 
+          onClick={handleDownloadMarkdown}
+          disabled={isExportingMarkdown}
+          className="min-w-[140px] sm:min-w-[180px] h-8 sm:h-10 text-xs sm:text-sm"
+        >
+          {isExportingMarkdown ? "내보내는 중..." : "마크다운 내보내기"}
+          <FileOutput className="w-4 h-4 sm:w-5 sm:h-5 ml-1 sm:ml-2" />
+        </Button>
+      </div>
+
       <SectionFooter
         currentDate={currentDate}
         signature={judgeSignature}
@@ -243,18 +406,6 @@ const EvaluationSection = () => {
         isCsvGenerating={isCsvGenerating}
         isMarkdownGenerating={isMarkdownGenerating}
       />
-
-      <div className="button-container">
-        <Button 
-          variant="outline" 
-          onClick={handleDownloadMarkdown}
-          disabled={isExportingMarkdown}
-          className="download-button"
-        >
-          {isExportingMarkdown ? "내보내는 중..." : "마크다운 내보내기"}
-          <FileOutput className="ml-2 h-4 w-4" />
-        </Button>
-      </div>
     </section>
   );
 };
