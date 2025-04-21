@@ -4,12 +4,16 @@ import EvaluationCriteriaTable from '@/components/evaluation/EvaluationCriteriaT
 import ScoreTable from '@/components/evaluation/ScoreTable';
 import GradingGuidelines from '@/components/schedule/GradingGuidelines';
 import SectionFooter from "@/components/ui/section-footer";
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
-import { generatePdfFromElement } from '@/utils/pdfUtils';
 import TurndownService from 'turndown';
 import { Button } from '@/components/ui/button';
-import { FileDown, FileText, FileOutput } from 'lucide-react';
+import { FileText, FileOutput } from 'lucide-react';
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { Textarea } from "./ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { DownloadIcon, FileIcon } from "lucide-react";
 
 const EvaluationSection = () => {
   const formRef = useRef<HTMLElement>(null);
@@ -25,9 +29,11 @@ const EvaluationSection = () => {
   const [compositionScore, setCompositionScore] = useState<number | null>(null);
   const [harmonyScore, setHarmonyScore] = useState<number | null>(null);
   const [totalScore, setTotalScore] = useState<number>(0);
-  const [isPdfGenerating, setIsPdfGenerating] = useState(false);
   const [isCsvGenerating, setIsCsvGenerating] = useState<boolean>(false);
   const [isMarkdownGenerating, setIsMarkdownGenerating] = useState<boolean>(false);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
+  const [isExportingCsv, setIsExportingCsv] = useState(false);
+  const [isExportingMarkdown, setIsExportingMarkdown] = useState(false);
 
   useEffect(() => {
     generateSeriesNumber();
@@ -84,58 +90,6 @@ const EvaluationSection = () => {
     }
   };
 
-  const handlePdfDownload = async () => {
-    if (!formRef.current) {
-      alert("양식 요소를 찾을 수 없습니다.");
-      return;
-    }
-    
-    setIsPdfGenerating(true);
-    
-    try {
-      const form = formRef.current;
-      
-      // PDF 생성을 위한 스타일 정리
-      const buttonContainers = form.querySelectorAll('.button-container');
-      const tempStyles: { el: HTMLElement; display: string }[] = [];
-      
-      // 버튼 컨테이너 숨기기 및 원래 스타일 저장
-      buttonContainers.forEach(el => {
-        const htmlEl = el as HTMLElement;
-        tempStyles.push({ el: htmlEl, display: htmlEl.style.display });
-        htmlEl.style.display = 'none';
-      });
-      
-      // PDF 생성을 위한 클래스 추가
-      form.classList.add('pdf-generating');
-      
-      // 파일명 생성
-      const filename = `심사표_${category || '전체'}_${artistName || '무제'}_${currentDate}.pdf`;
-      
-      // PDF 생성
-      await generatePdfFromElement(
-        form,
-        filename,
-        '심사표',
-        currentDate,
-        judgeSignature
-      );
-      
-      // 원래 스타일로 복원
-      tempStyles.forEach(item => {
-        item.el.style.display = item.display;
-      });
-      form.classList.remove('pdf-generating');
-      
-      alert('심사표가 PDF로 저장되었습니다.');
-    } catch (error) {
-      console.error("PDF 생성 오류:", error);
-      alert("PDF 파일을 생성하는 중 오류가 발생했습니다.");
-    } finally {
-      setIsPdfGenerating(false);
-    }
-  };
-
   const handleCsvExport = () => {
     try {
       setIsCsvGenerating(true);
@@ -146,10 +100,10 @@ const EvaluationSection = () => {
       csvContent += `작품명:,${workTitle}\n\n`;
       
       csvContent += '평가 항목,배점,점수\n';
-      csvContent += `필획의 정확성과 유창성,40,${pointsScore || 0}\n`;
-      csvContent += `구조와 자간,25,${structureScore || 0}\n`;
-      csvContent += `구도와 여백,20,${compositionScore || 0}\n`;
-      csvContent += `조화와 창의성,15,${harmonyScore || 0}\n`;
+      csvContent += `점획(點劃),40,${pointsScore || 0}\n`;
+      csvContent += `결구(結構),25,${structureScore || 0}\n`;
+      csvContent += `장법(章法),20,${compositionScore || 0}\n`;
+      csvContent += `조화(調和),15,${harmonyScore || 0}\n`;
       csvContent += `총점,100,${totalScore}\n\n`;
       
       csvContent += `심사위원:,${judgeSignature}`;
@@ -175,70 +129,56 @@ const EvaluationSection = () => {
     }
   };
 
-  const handleDownloadMarkdown = () => {
+  const handleDownloadMarkdown = async () => {
     try {
-      setIsMarkdownGenerating(true);
+      setIsExportingMarkdown(true);
+      const turndownService = new TurndownService();
+
+      // 현재 날짜와 시간 포맷
+      const now = new Date();
+      const dateStr = now.toISOString().split('T')[0];
+      const timeStr = now.toTimeString().split(' ')[0];
       
-      // 마크다운 변환을 위한 TurndownService 인스턴스 생성
-      const turndownService = new TurndownService({
-        headingStyle: 'atx',
-        codeBlockStyle: 'fenced'
-      });
-      
-      // 마크다운 콘텐츠 생성
-      let markdownContent = `# 심사표\n\n`;
-      markdownContent += `작성일: ${currentDate}\n\n`;
+      // 마크다운 컨텐츠 생성
+      let markdownContent = `# 서예 작품 평가\n\n`;
       markdownContent += `## 작품 정보\n\n`;
-      markdownContent += `- 작품 번호: ${seriesNumber}\n`;
-      markdownContent += `- 심사 부문: ${category}\n`;
-      markdownContent += `- 작가명: ${artistName}\n`;
-      markdownContent += `- 작품명: ${workTitle}\n\n`;
+      markdownContent += `- **일련 번호**: ${seriesNumber || '미지정'}\n`;
+      markdownContent += `- **평가 일자**: ${currentDate || new Date().toLocaleDateString()}\n`;
+      markdownContent += `- **부문**: ${category || '미지정'}\n`;
+      markdownContent += `- **작가명**: ${artistName || '미지정'}\n`;
+      markdownContent += `- **작품명**: ${workTitle || '미지정'}\n\n`;
       
-      markdownContent += `## 평가 항목\n\n`;
-      markdownContent += `| 평가 항목 | 배점 | 점수 |\n`;
-      markdownContent += `|---------|-----|-----|\n`;
-      markdownContent += `| 필획의 정확성과 유창성 | 40 | ${pointsScore || 0} |\n`;
-      markdownContent += `| 구조와 자간 | 25 | ${structureScore || 0} |\n`;
-      markdownContent += `| 구도와 여백 | 20 | ${compositionScore || 0} |\n`;
-      markdownContent += `| 조화와 창의성 | 15 | ${harmonyScore || 0} |\n`;
-      markdownContent += `| **총점** | **100** | **${totalScore}** |\n\n`;
+      markdownContent += `## 점수 평가\n\n`;
+      markdownContent += `| 평가 항목 | 점수 | 최대 점수 |\n`;
+      markdownContent += `|---------|-----|--------|\n`;
+      markdownContent += `| 점획(點劃) | ${pointsScore} | 25 |\n`;
+      markdownContent += `| 결구(結構) | ${structureScore} | 25 |\n`;
+      markdownContent += `| 장법(章法) | ${compositionScore} | 25 |\n`;
+      markdownContent += `| 조화(調和) | ${harmonyScore} | 25 |\n`;
+      markdownContent += `| **총점** | **${totalScore}** | **100** |\n\n`;
       
-      markdownContent += `## 등급 기준\n\n`;
-      markdownContent += `- 90점 이상: A등급 (대상 및 최우수상 후보)\n`;
-      markdownContent += `- 85-89점: B등급 (우수상 후보)\n`;
-      markdownContent += `- 80-84점: C등급 (특선 후보)\n`;
-      markdownContent += `- 75-79점: D등급 (입선 후보)\n`;
-      markdownContent += `- 75점 미만: 기준 미달\n\n`;
+      markdownContent += `## 종합 의견\n\n${judgeSignature || '(의견이 없습니다)'}\n\n`;
       
-      markdownContent += `심사위원: ${judgeSignature}`;
+      markdownContent += `## 심사위원\n\n`;
+      markdownContent += `${judgeSignature || '미지정'}\n\n`;
+      markdownContent += `---\n\n`;
+      markdownContent += `생성일시: ${dateStr} ${timeStr}`;
       
       // 파일 다운로드
-      const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8;' });
+      const blob = new Blob([markdownContent], { type: 'text/markdown' });
       const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
+      const downloadLink = document.createElement('a');
+      downloadLink.href = url;
+      downloadLink.download = `서예심사_평가_${seriesNumber || '미지정'}_${dateStr}.md`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+      URL.revokeObjectURL(url);
       
-      // 파일명 생성
-      const filename = `심사표_${category || '전체'}_${artistName || '무제'}_${new Date().toISOString().split('T')[0]}.md`;
-      link.setAttribute('download', filename);
-      
-      // 링크 클릭하여 다운로드
-      document.body.appendChild(link);
-      link.click();
-      
-      // 임시 요소 제거
-      setTimeout(() => {
-        if (document.body.contains(link)) {
-          document.body.removeChild(link);
-        }
-        URL.revokeObjectURL(url);
-        setIsMarkdownGenerating(false);
-        alert('심사표를 마크다운 파일로 내보냈습니다.');
-      }, 100);
     } catch (error) {
-      console.error('마크다운 내보내기 오류:', error);
-      setIsMarkdownGenerating(false);
-      alert('마크다운 파일을 생성하는 중 오류가 발생했습니다.');
+      console.error('Markdown 다운로드 오류:', error);
+    } finally {
+      setIsExportingMarkdown(false);
     }
   };
 
@@ -298,13 +238,23 @@ const EvaluationSection = () => {
         currentDate={currentDate}
         signature={judgeSignature}
         setSignature={setJudgeSignature}
-        handlePdfDownload={handlePdfDownload}
         handleCsvExport={handleCsvExport}
         handleMarkdownDownload={handleDownloadMarkdown}
-        isPdfGenerating={isPdfGenerating}
         isCsvGenerating={isCsvGenerating}
         isMarkdownGenerating={isMarkdownGenerating}
       />
+
+      <div className="button-container">
+        <Button 
+          variant="outline" 
+          onClick={handleDownloadMarkdown}
+          disabled={isExportingMarkdown}
+          className="download-button"
+        >
+          {isExportingMarkdown ? "내보내는 중..." : "마크다운 내보내기"}
+          <FileOutput className="ml-2 h-4 w-4" />
+        </Button>
+      </div>
     </section>
   );
 };

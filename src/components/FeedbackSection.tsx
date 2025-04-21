@@ -9,6 +9,10 @@ import { FileDown, Save, FileText, FileOutput } from 'lucide-react';
 import SectionFooter from "@/components/ui/section-footer";
 import { generatePdfFromElement } from '@/utils/pdfUtils';
 import TurndownService from 'turndown';
+import { Label as UILabel } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Send } from 'lucide-react';
 
 const FeedbackSection: React.FC = () => {
   const [currentDate, setCurrentDate] = useState('');
@@ -17,38 +21,41 @@ const FeedbackSection: React.FC = () => {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState<boolean>(false);
   const [isExportingCSV, setIsExportingCSV] = useState<boolean>(false);
   const [isExportingMarkdown, setIsExportingMarkdown] = useState<boolean>(false);
+  const [isExportingPdf, setIsExportingPdf] = useState<boolean>(false);
   
   const formRef = useRef<HTMLDivElement>(null);
   
-  const [overallOpinion, setOverallOpinion] = useState('');
-  const [hangulOpinion, setHangulOpinion] = useState('');
-  const [hanmunOpinion, setHanmunOpinion] = useState('');
-  const [modernOpinion, setModernOpinion] = useState('');
-  const [calligraphyOpinion, setCalligraphyOpinion] = useState('');
-  const [sealOpinion, setSealOpinion] = useState('');
-  const [paintingOpinion, setPaintingOpinion] = useState('');
-  const [finalOpinion, setFinalOpinion] = useState('');
+  const [generalOpinion, setGeneralOpinion] = useState('');
+  const [pointsOpinion, setPointsOpinion] = useState('');
+  const [structureOpinion, setStructureOpinion] = useState('');
+  const [compositionOpinion, setCompositionOpinion] = useState('');
+  const [harmonyOpinion, setHarmonyOpinion] = useState('');
+  const [serialNumber, setSerialNumber] = useState('');
+  const [category, setCategory] = useState('');
+  const [artistName, setArtistName] = useState('');
+  const [workTitle, setWorkTitle] = useState('');
+  const [workNumber, setWorkNumber] = useState('');
+  
+  const [judgeSignature, setJudgeSignature] = useState('');
 
   useEffect(() => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const formattedDate = `${year}년 ${month}월 ${day}일`;
+    const today = new Date();
+    const formattedDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     setCurrentDate(formattedDate);
+    
+    const datePart = formattedDate.replace(/-/g, '');
+    const randomPart = Math.floor(1000 + Math.random() * 9000);
+    setSerialNumber(`FD-${datePart}-${randomPart}`);
     
     loadAllFromLocalStorage();
   }, []);
   
   const loadAllFromLocalStorage = () => {
-    setOverallOpinion(loadFromLocalStorage('asca-overall-opinion'));
-    setHangulOpinion(loadFromLocalStorage('asca-hangul-opinion'));
-    setHanmunOpinion(loadFromLocalStorage('asca-hanmun-opinion'));
-    setModernOpinion(loadFromLocalStorage('asca-modern-opinion'));
-    setCalligraphyOpinion(loadFromLocalStorage('asca-calligraphy-opinion'));
-    setSealOpinion(loadFromLocalStorage('asca-seal-opinion'));
-    setPaintingOpinion(loadFromLocalStorage('asca-painting-opinion'));
-    setFinalOpinion(loadFromLocalStorage('asca-final-opinion'));
+    setGeneralOpinion(loadFromLocalStorage('asca-general-opinion'));
+    setPointsOpinion(loadFromLocalStorage('asca-points-opinion'));
+    setStructureOpinion(loadFromLocalStorage('asca-structure-opinion'));
+    setCompositionOpinion(loadFromLocalStorage('asca-composition-opinion'));
+    setHarmonyOpinion(loadFromLocalStorage('asca-harmony-opinion'));
     
     const savedSignature = localStorage.getItem('asca-opinion-signature');
     if (savedSignature) {
@@ -152,12 +159,10 @@ const FeedbackSection: React.FC = () => {
         '작성일', 
         '심사위원장', 
         '전체 심사평', 
-        '한글 부문', 
-        '한문 부문', 
-        '현대서예 부문', 
-        '캘리그래피 부문', 
-        '전각, 서각 부문', 
-        '문인화, 동양화, 민화 부문', 
+        '점획(點劃)', 
+        '결구(結構)', 
+        '장법(章法)', 
+        '조화(調和)', 
         '심사총평 및 제언',
         '등급결정 기준',
         '동점자 처리방안',
@@ -187,14 +192,11 @@ const FeedbackSection: React.FC = () => {
       const data = [
         currentDate,
         signatureName,
-        overallOpinion,
-        hangulOpinion,
-        hanmunOpinion,
-        modernOpinion,
-        calligraphyOpinion,
-        sealOpinion,
-        paintingOpinion,
-        finalOpinion,
+        generalOpinion,
+        pointsOpinion,
+        structureOpinion,
+        compositionOpinion,
+        harmonyOpinion,
         gradingCriteria,
         tiebreakCriteria,
         resultConfirmation
@@ -238,665 +240,199 @@ const FeedbackSection: React.FC = () => {
     }
   };
 
-  const handleDownloadMarkdown = () => {
+  const handleDownloadMarkdown = async () => {
     try {
       setIsExportingMarkdown(true);
+      const turndownService = new TurndownService();
+
+      // 현재 날짜와 시간 포맷
+      const now = new Date();
+      const dateStr = now.toISOString().split('T')[0];
+      const timeStr = now.toTimeString().split(' ')[0];
       
-      if (!formRef.current) {
-        alert('폼 정보를 가져올 수 없습니다.');
-        setIsExportingMarkdown(false);
-        return;
-      }
+      // 마크다운 컨텐츠 생성
+      let markdownContent = `# 서예 작품 피드백\n\n`;
+      markdownContent += `## 작품 정보\n\n`;
+      markdownContent += `- **일련 번호**: ${serialNumber || '미지정'}\n`;
+      markdownContent += `- **평가 일자**: ${currentDate || new Date().toLocaleDateString()}\n`;
+      markdownContent += `- **부문**: ${category || '미지정'}\n`;
+      markdownContent += `- **작가명**: ${artistName || '미지정'}\n`;
+      markdownContent += `- **작품명**: ${workTitle || '미지정'}\n\n`;
       
-      // 마크다운 변환을 위한 TurndownService 인스턴스 생성
-      const turndownService = new TurndownService({
-        headingStyle: 'atx',
-        codeBlockStyle: 'fenced'
-      });
+      markdownContent += `## 종합 의견\n\n${generalOpinion || '(의견이 없습니다)'}\n\n`;
       
-      // 텍스트 내용 업데이트
-      updatePrintContent();
+      markdownContent += `## 세부 평가\n\n`;
+      markdownContent += `### 점획(點劃)\n\n${pointsOpinion || '(의견이 없습니다)'}\n\n`;
+      markdownContent += `### 결구(結構)\n\n${structureOpinion || '(의견이 없습니다)'}\n\n`;
+      markdownContent += `### 장법(章法)\n\n${compositionOpinion || '(의견이 없습니다)'}\n\n`;
+      markdownContent += `### 조화(調和)\n\n${harmonyOpinion || '(의견이 없습니다)'}\n\n`;
       
-      // 마크다운 콘텐츠 생성
-      let markdownContent = `# 심사의견서\n\n`;
-      markdownContent += `작성일: ${currentDate}\n\n`;
-      markdownContent += `## 전체 심사평\n\n${overallOpinion}\n\n`;
-      
-      markdownContent += `## 부문별 심사의견\n\n`;
-      markdownContent += `### 한글 부문\n\n${hangulOpinion}\n\n`;
-      markdownContent += `### 한문 부문\n\n${hanmunOpinion}\n\n`;
-      markdownContent += `### 현대서예 부문\n\n${modernOpinion}\n\n`;
-      markdownContent += `### 캘리그래피 부문\n\n${calligraphyOpinion}\n\n`;
-      markdownContent += `### 전각, 서각 부문\n\n${sealOpinion}\n\n`;
-      markdownContent += `### 문인화, 동양화, 민화 부문\n\n${paintingOpinion}\n\n`;
-      
-      markdownContent += `## 심사총평 및 제언\n\n${finalOpinion}\n\n`;
-      
-      markdownContent += `## 등급결정 및 동점자 처리\n\n`;
-      markdownContent += `### 등급결정 기준\n\n`;
-      markdownContent += `- 90점 이상: 대상 및 최우수상 후보\n`;
-      markdownContent += `- 85점 이상: 우수상 후보\n`;
-      markdownContent += `- 80점 이상: 특선 후보\n`;
-      markdownContent += `- 75점 이상: 입선 후보\n\n`;
-      
-      markdownContent += `### 동점자 발생시 처리방안\n\n`;
-      markdownContent += `- 조화(調和) 점수가 높은 작품우선\n`;
-      markdownContent += `- 장법(章法) 점수가 높은 작품우선\n`;
-      markdownContent += `- 심사위원 간 협의를 통한 결정\n\n`;
-      
-      markdownContent += `## 심사결과 확정\n\n`;
-      markdownContent += `1. 심사위원장은 종합심사 결과를 이사장에게 전달합니다.\n`;
-      markdownContent += `2. 이사회는 심사결과를 검토하고 최종 승인합니다.\n`;
-      markdownContent += `3. 확정된 심사결과는 수상자에게 개별 통보하며, 협회 홈페이지에 게시합니다.\n\n`;
-      
-      markdownContent += `심사위원장: ${signatureName}`;
+      markdownContent += `## 심사위원\n\n`;
+      markdownContent += `${judgeSignature || '미지정'}\n\n`;
+      markdownContent += `---\n\n`;
+      markdownContent += `생성일시: ${dateStr} ${timeStr}`;
       
       // 파일 다운로드
-      const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8;' });
+      const blob = new Blob([markdownContent], { type: 'text/markdown' });
       const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
+      const downloadLink = document.createElement('a');
+      downloadLink.href = url;
+      downloadLink.download = `서예심사_피드백_${serialNumber || '미지정'}_${dateStr}.md`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+      URL.revokeObjectURL(url);
       
-      // 현재 날짜로 파일명 생성
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = String(now.getDate()).padStart(2, '0');
-      link.setAttribute('download', `심사의견서_${year}${month}${day}.md`);
-      
-      // 링크 클릭하여 다운로드
-      document.body.appendChild(link);
-      link.click();
-      
-      // 임시 요소 제거 (타임아웃으로 지연 처리)
-      setTimeout(() => {
-        if (document.body.contains(link)) {
-          document.body.removeChild(link);
-        }
-        URL.revokeObjectURL(url);
-        setIsExportingMarkdown(false);
-        alert('심사의견을 마크다운 파일로 내보냈습니다.');
-      }, 100);
     } catch (error) {
-      console.error('마크다운 내보내기 오류:', error);
+      console.error('Markdown 다운로드 오류:', error);
+    } finally {
       setIsExportingMarkdown(false);
-      alert('마크다운 파일을 생성하는 중 오류가 발생했습니다.');
     }
   };
 
   return (
     <section className="calligraphy-section" id="feedback-form" ref={formRef}>
-      <h2 className="calligraphy-section-title">심사의견서</h2>
+      <h2 className="calligraphy-section-title">심사 의견서</h2>
       
-      <div className={`asca-eval-form ${isGeneratingPDF ? 'pdf-generating' : ''}`} ref={formRef} id="evaluation-opinion-form">
-        <div className="logo"></div>
-        <div className="title">심사의견서</div>
-
-        <div className="form-section">
-          <div className="section-title">전체 심사평</div>
-          <div className="opinion-content">
-            <Textarea 
-              id="asca-overall-opinion" 
-              placeholder="전체 심사평을 작성해주세요."
-              value={overallOpinion}
-              onChange={(e) => {
-                setOverallOpinion(e.target.value);
-                saveToLocalStorage('asca-overall-opinion', e.target.value);
-              }}
-              className="min-h-[120px]"
-            />
-            <div id="asca-overall-opinion-print" className="print-content"></div>
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div className="flex flex-col space-y-2">
+          <UILabel htmlFor="work-number" className="font-medium">작품 번호</UILabel>
+          <Input 
+            id="work-number" 
+            className="max-w-xs" 
+            value={serialNumber}
+            onChange={(e) => setSerialNumber(e.target.value)}
+          />
         </div>
         
-        <div className="form-section">
-          <div className="section-title">부문별 심사의견</div>
-          <div className="categories-grid">
-            <div className="opinion-field">
-              <div className="opinion-title">한글 부문</div>
-              <div className="opinion-content">
-                <Textarea 
-                  id="asca-hangul-opinion" 
-                  placeholder="한글 부문에 대한 심사의견을 작성해주세요."
-                  value={hangulOpinion}
-                  onChange={(e) => {
-                    setHangulOpinion(e.target.value);
-                    saveToLocalStorage('asca-hangul-opinion', e.target.value);
-                  }}
-                  className="min-h-[120px]"
-                />
-                <div id="asca-hangul-opinion-print" className="print-content"></div>
-              </div>
-            </div>
-            
-            <div className="opinion-field">
-              <div className="opinion-title">한문 부문</div>
-              <div className="opinion-content">
-                <Textarea 
-                  id="asca-hanmun-opinion" 
-                  placeholder="한문 부문에 대한 심사의견을 작성해주세요."
-                  value={hanmunOpinion}
-                  onChange={(e) => {
-                    setHanmunOpinion(e.target.value);
-                    saveToLocalStorage('asca-hanmun-opinion', e.target.value);
-                  }}
-                  className="min-h-[120px]"
-                />
-                <div id="asca-hanmun-opinion-print" className="print-content"></div>
-              </div>
-            </div>
-            
-            <div className="opinion-field">
-              <div className="opinion-title">현대서예 부문</div>
-              <div className="opinion-content">
-                <Textarea 
-                  id="asca-modern-opinion" 
-                  placeholder="현대서예 부문에 대한 심사의견을 작성해주세요."
-                  value={modernOpinion}
-                  onChange={(e) => {
-                    setModernOpinion(e.target.value);
-                    saveToLocalStorage('asca-modern-opinion', e.target.value);
-                  }}
-                  className="min-h-[120px]"
-                />
-                <div id="asca-modern-opinion-print" className="print-content"></div>
-              </div>
-            </div>
-            
-            <div className="opinion-field">
-              <div className="opinion-title">캘리그래피 부문</div>
-              <div className="opinion-content">
-                <Textarea 
-                  id="asca-calligraphy-opinion" 
-                  placeholder="캘리그래피 부문에 대한 심사의견을 작성해주세요."
-                  value={calligraphyOpinion}
-                  onChange={(e) => {
-                    setCalligraphyOpinion(e.target.value);
-                    saveToLocalStorage('asca-calligraphy-opinion', e.target.value);
-                  }}
-                  className="min-h-[120px]"
-                />
-                <div id="asca-calligraphy-opinion-print" className="print-content"></div>
-              </div>
-            </div>
-            
-            <div className="opinion-field">
-              <div className="opinion-title">전각, 서각 부문</div>
-              <div className="opinion-content">
-                <Textarea 
-                  id="asca-seal-opinion" 
-                  placeholder="전각, 서각 부문에 대한 심사의견을 작성해주세요."
-                  value={sealOpinion}
-                  onChange={(e) => {
-                    setSealOpinion(e.target.value);
-                    saveToLocalStorage('asca-seal-opinion', e.target.value);
-                  }}
-                  className="min-h-[120px]"
-                />
-                <div id="asca-seal-opinion-print" className="print-content"></div>
-              </div>
-            </div>
-            
-            <div className="opinion-field">
-              <div className="opinion-title">문인화, 동양화, 민화 부문</div>
-              <div className="opinion-content">
-                <Textarea 
-                  id="asca-painting-opinion" 
-                  placeholder="문인화, 동양화, 민화 부문에 대한 심사의견을 작성해주세요."
-                  value={paintingOpinion}
-                  onChange={(e) => {
-                    setPaintingOpinion(e.target.value);
-                    saveToLocalStorage('asca-painting-opinion', e.target.value);
-                  }}
-                  className="min-h-[120px]"
-                />
-                <div id="asca-painting-opinion-print" className="print-content"></div>
-              </div>
-            </div>
-          </div>
+        <div className="flex flex-col space-y-2">
+          <UILabel htmlFor="category" className="font-medium">심사 부문</UILabel>
+          <Input 
+            id="category" 
+            className="max-w-xs" 
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          />
         </div>
         
-        <div className="form-section">
-          <div className="section-title">심사총평 및 제언</div>
-          <div className="opinion-content">
-            <Textarea 
-              id="asca-final-opinion" 
-              placeholder="심사총평 및 제언을 작성해주세요."
-              value={finalOpinion}
-              onChange={(e) => {
-                setFinalOpinion(e.target.value);
-                saveToLocalStorage('asca-final-opinion', e.target.value);
-              }}
-              className="min-h-[120px]"
-            />
-            <div id="asca-final-opinion-print" className="print-content"></div>
-          </div>
+        <div className="flex flex-col space-y-2">
+          <UILabel htmlFor="artist-name" className="font-medium">작가명</UILabel>
+          <Input 
+            id="artist-name" 
+            className="max-w-xs" 
+            value={artistName}
+            onChange={(e) => setArtistName(e.target.value)}
+          />
         </div>
-
-        <div className="form-section">
-          <div className="section-title">등급결정 및 동점자 처리</div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <div className="opinion-title">등급결정 기준</div>
-              <ul className="list-disc pl-5 space-y-1 text-sm">
-                <li>90점 이상: 대상 및 최우수상 후보</li>
-                <li>85점 이상: 우수상 후보</li>
-                <li>80점 이상: 특선 후보</li>
-                <li>75점 이상: 입선 후보</li>
-              </ul>
-            </div>
-            <div>
-              <div className="opinion-title">동점자 발생시 처리방안</div>
-              <ul className="list-disc pl-5 space-y-1 text-sm">
-                <li>조화(調和) 점수가 높은 작품우선</li>
-                <li>장법(章法) 점수가 높은 작품우선</li>
-                <li>심사위원 간 협의를 통한 결정</li>
-              </ul>
-            </div>
-          </div>
+        
+        <div className="flex flex-col space-y-2">
+          <UILabel htmlFor="work-title" className="font-medium">작품명</UILabel>
+          <Input 
+            id="work-title" 
+            className="max-w-xs"
+            value={workTitle}
+            onChange={(e) => setWorkTitle(e.target.value)}
+          />
         </div>
-
-        <div className="form-section">
-          <div className="section-title">심사결과 확정</div>
-          <ol className="list-decimal pl-5 space-y-1 text-sm">
-            <li>심사위원장은 종합심사 결과를 이사장에게 전달합니다.</li>
-            <li>이사회는 심사결과를 검토하고 최종 승인합니다.</li>
-            <li>확정된 심사결과는 수상자에게 개별 통보하며, 협회 홈페이지에 게시합니다.</li>
-          </ol>
-        </div>
-
-        <SectionFooter
-          currentDate={currentDate}
-          signature={signatureName}
-          setSignature={setSignatureName}
-          handlePdfDownload={handleDownloadPDF}
-          handleCsvExport={handleExportCSV}
-          handleMarkdownDownload={handleDownloadMarkdown}
-          isPdfGenerating={isGeneratingPDF}
-          isCsvGenerating={isExportingCSV}
-          isMarkdownGenerating={isExportingMarkdown}
-        />
       </div>
       
-      <style>
-        {`
-        .asca-eval-form {
-          width: 100%;
-          max-width: 100%;
-          min-height: 297mm;
-          margin: 0 auto;
-          padding: 1.5rem 2rem;
-          line-height: 1.6;
-          color: hsl(var(--foreground));
-          background-color: hsl(var(--background));
-          box-shadow: 0 0 10px rgba(0,0,0,0.1);
-          box-sizing: border-box;
-          display: flex;
-          flex-direction: column;
-          font-family: 'Noto Serif TC', serif;
-          border-radius: var(--radius);
-          border: 1px solid hsl(var(--border));
-        }
+      <div className="flex flex-col space-y-4 mb-6">
+        <div>
+          <UILabel htmlFor="general-opinion" className="text-lg font-medium mb-1 block">종합 의견</UILabel>
+          <Textarea 
+            id="general-opinion" 
+            placeholder="작품에 대한 종합적인 의견을 작성해주세요." 
+            className="min-h-[150px]"
+            value={generalOpinion}
+            onChange={(e) => setGeneralOpinion(e.target.value)}
+          />
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+          <UILabel htmlFor="points-opinion" className="text-lg font-medium mb-1 block">점획(點劃)</UILabel>
+          <Textarea 
+            id="points-opinion" 
+            placeholder="획의 형태, 필력, 운필에 대한 의견을 작성해주세요." 
+            className="min-h-[120px]"
+            value={pointsOpinion}
+            onChange={(e) => setPointsOpinion(e.target.value)}
+          />
+        </div>
         
-        .dark .asca-eval-form {
-          background-color: hsl(var(--card));
-          color: hsl(var(--card-foreground));
-          box-shadow: 0 0 10px rgba(0,0,0,0.3);
-        }
+        <div>
+          <UILabel htmlFor="structure-opinion" className="text-lg font-medium mb-1 block">결구(結構)</UILabel>
+          <Textarea 
+            id="structure-opinion" 
+            placeholder="글자의 구조와 균형, 자간에 대한 의견을 작성해주세요." 
+            className="min-h-[120px]"
+            value={structureOpinion}
+            onChange={(e) => setStructureOpinion(e.target.value)}
+          />
+        </div>
         
-        .pdf-generating {
-          cursor: progress;
-        }
+        <div>
+          <UILabel htmlFor="composition-opinion" className="text-lg font-medium mb-1 block">장법(章法)</UILabel>
+          <Textarea 
+            id="composition-opinion" 
+            placeholder="작품의 전체적인 구도와 여백 활용에 대한 의견을 작성해주세요." 
+            className="min-h-[120px]"
+            value={compositionOpinion}
+            onChange={(e) => setCompositionOpinion(e.target.value)}
+          />
+        </div>
         
-        .pdf-generating .button-container button {
-          pointer-events: none;
-          opacity: 0.7;
-        }
+        <div>
+          <UILabel htmlFor="harmony-opinion" className="text-lg font-medium mb-1 block">조화(調和)</UILabel>
+          <Textarea 
+            id="harmony-opinion" 
+            placeholder="작품의 통일성, 조화, 개성에 대한 의견을 작성해주세요." 
+            className="min-h-[120px]"
+            value={harmonyOpinion}
+            onChange={(e) => setHarmonyOpinion(e.target.value)}
+          />
+        </div>
+      </div>
+      
+      <div className="button-container">
+        <Button
+          onClick={handleDownloadPDF}
+          className="py-5 px-8 text-lg"
+          disabled={isExportingPdf}
+        >
+          {isExportingPdf ? '생성 중...' : 'PDF 다운로드'}
+          <FileDown className="ml-2 h-5 w-5" />
+        </Button>
         
-        .asca-eval-form * {
-          box-sizing: border-box;
-        }
+        <Button
+          onClick={handleExportCSV}
+          className="py-5 px-8 text-lg bg-emerald-600 hover:bg-emerald-700"
+          disabled={isExportingCSV}
+        >
+          {isExportingCSV ? '내보내는 중...' : 'CSV 내보내기'}
+          <FileText className="ml-2 h-5 w-5" />
+        </Button>
         
-        .asca-eval-form .logo {
-          display: none;
-        }
-        
-        .asca-eval-form .title {
-          text-align: center;
-          font-size: 24pt;
-          font-weight: bold;
-          margin-bottom: 1.5rem;
-          color: hsl(var(--foreground));
-        }
-        
-        .dark .asca-eval-form .title {
-          color: hsl(var(--foreground));
-        }
-        
-        .asca-eval-form .form-section {
-          margin-bottom: 1.5rem;
-          padding-bottom: 1.5rem;
-          border-bottom: 1px solid hsl(var(--border));
-        }
-        
-        .dark .asca-eval-form .form-section {
-          border-bottom: 1px solid hsl(var(--border));
-        }
-        
-        .asca-eval-form .form-section:last-of-type {
-          border-bottom: none;
-          margin-bottom: 0;
-        }
-        
-        .asca-eval-form .section-title {
-          font-size: 1.3rem;
-          margin-bottom: 1rem;
-          padding-bottom: 0.5rem;
-          border-bottom: 1px solid hsl(var(--border));
-          position: relative;
-          color: hsl(var(--primary));
-        }
-        
-        .dark .asca-eval-form .section-title {
-          color: hsl(var(--primary));
-          border-bottom: 1px solid hsl(var(--border));
-        }
-        
-        .asca-eval-form .section-title::after {
-          content: "";
-          position: absolute;
-          bottom: -1px;
-          left: 0;
-          width: 50px;
-          height: 3px;
-          background-color: hsl(var(--celadon));
-        }
-        
-        .asca-eval-form .opinion-field {
-          margin-bottom: 1.5rem;
-        }
-        
-        .asca-eval-form .opinion-title {
-          font-weight: bold;
-          margin-bottom: 0.5rem;
-          font-size: 1rem;
-          color: hsl(var(--foreground));
-        }
-        
-        .dark .asca-eval-form .opinion-title {
-          color: hsl(var(--foreground));
-        }
-        
-        .asca-eval-form .opinion-content {
-          border: 1px solid hsl(var(--border));
-          border-radius: var(--radius);
-          padding: 0;
-          background-color: hsl(var(--card));
-          overflow: hidden;
-        }
-        
-        .dark .asca-eval-form .opinion-content {
-          border: 1px solid hsl(var(--border));
-          background-color: hsl(var(--card));
-        }
-        
-        .asca-eval-form textarea {
-          min-height: 120px !important;
-          color: hsl(var(--card-foreground));
-          background-color: hsl(var(--card));
-          border: none;
-          border-radius: 0;
-          resize: vertical;
-          width: 100%;
-          padding: 10px;
-          font-family: inherit;
-        }
-        
-        .dark .asca-eval-form textarea {
-          color: hsl(var(--card-foreground));
-          background-color: hsl(var(--card));
-        }
-        
-        .asca-eval-form .categories-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-          gap: 1.5rem;
-        }
-        
-        .asca-eval-form .signature-section {
-          margin-top: auto;
-          padding-top: 1rem;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          align-items: flex-start;
-          border-top: 1px solid hsl(var(--celadon));
-          gap: 0.75rem;
-        }
-        
-        @media (min-width: 640px) {
-          .asca-eval-form .signature-section {
-            padding-top: 1.5rem;
-            flex-direction: row;
-            align-items: flex-end;
-            gap: 0;
-          }
-        }
-        
-        .asca-eval-form .evaluation-date {
-          font-size: 10pt;
-          color: hsl(var(--foreground));
-          margin: 0;
-          padding-bottom: 0;
-          white-space: nowrap;
-        }
-        
-        @media (min-width: 640px) {
-          .asca-eval-form .evaluation-date {
-            padding-bottom: 8px;
-          }
-        }
-        
-        .dark .asca-eval-form .evaluation-date {
-          color: hsl(var(--foreground));
-        }
-        
-        .asca-eval-form .signature-line {
-          display: flex;
-          align-items: baseline;
-          gap: 8px;
-          flex-grow: 1;
-          justify-content: flex-start;
-          color: hsl(var(--foreground));
-          flex-wrap: wrap;
-        }
-        
-        @media (min-width: 640px) {
-          .asca-eval-form .signature-line {
-            justify-content: flex-end;
-            flex-wrap: nowrap;
-          }
-        }
-        
-        .dark .asca-eval-form .signature-line {
-          color: hsl(var(--foreground));
-        }
-        
-        .asca-eval-form .signature-line label {
-          margin-bottom: 0;
-          font-weight: bold;
-          white-space: nowrap;
-        }
-        
-        .asca-eval-form .signature-input-container {
-          max-width: 250px;
-          width: 100%;
-          position: relative;
-        }
-        
-        .asca-eval-form .signature-input {
-          width: 100%;
-          padding: 4px 0;
-          border: none;
-          border-bottom: 1px solid hsl(var(--border));
-          background-color: transparent;
-          color: hsl(var(--foreground));
-          border-radius: 0;
-          font-family: inherit;
-          font-size: inherit;
-          line-height: inherit;
-          height: auto;
-        }
-        
-        @media (min-width: 640px) {
-          .asca-eval-form .signature-input {
-            padding: 8px 0;
-          }
-        }
-        
-        .dark .asca-eval-form .signature-input {
-          border-bottom: 1px solid hsl(var(--border));
-          color: hsl(var(--foreground));
-        }
-        
-        .asca-eval-form .signature-label-text {
-          font-size: 10pt;
-          color: hsl(var(--foreground));
-          white-space: nowrap;
-          padding-bottom: 0;
-        }
-        
-        @media (min-width: 640px) {
-          .asca-eval-form .signature-label-text {
-            padding-bottom: 8px;
-          }
-        }
-        
-        .dark .asca-eval-form .signature-label-text {
-          color: hsl(var(--foreground));
-        }
-        
-        .asca-eval-form .button-container {
-          margin-top: 0.75rem;
-          padding-top: 0.5rem;
-          display: flex;
-          flex-direction: column-reverse;
-          justify-content: space-between;
-          align-items: center;
-          gap: 0.75rem;
-          border-top: 1px solid hsl(var(--celadon));
-        }
-        
-        @media (min-width: 640px) {
-          .asca-eval-form .button-container {
-            margin-top: 1rem;
-            flex-direction: row;
-            gap: 0;
-          }
-        }
-        
-        .asca-eval-form .copyright-footer {
-          font-size: 8pt;
-          color: hsl(var(--muted-foreground));
-          text-align: center;
-          margin: 0;
-          width: 100%;
-        }
-        
-        @media (min-width: 640px) {
-          .asca-eval-form .copyright-footer {
-            text-align: left;
-            width: auto;
-          }
-        }
-        
-        .asca-eval-form .button-group {
-          display: flex;
-          gap: 8px;
-          width: 100%;
-        }
-        
-        @media (min-width: 640px) {
-          .asca-eval-form .button-group {
-            width: auto;
-          }
-        }
-        
-        .asca-eval-form .print-content {
-          display: none;
-          white-space: pre-wrap;
-          word-wrap: break-word;
-          font-family: inherit;
-          font-size: inherit;
-          line-height: inherit;
-          color: hsl(var(--foreground));
-          padding: 10px;
-          min-height: 120px;
-        }
-        
-        .dark .asca-eval-form .print-content {
-          color: hsl(var(--foreground));
-        }
-        
-        @media (max-width: 768px) {
-          .asca-eval-form {
-            width: 100%;
-            margin: 0;
-            padding: 1rem 0.75rem;
-          }
-          
-          .asca-eval-form .title {
-            font-size: 18pt;
-            margin-bottom: 0.75rem;
-          }
-          
-          .asca-eval-form .categories-grid {
-            grid-template-columns: 1fr;
-            gap: 1rem;
-          }
-
-          .asca-eval-form .form-section {
-            margin-bottom: 1rem;
-            padding-bottom: 1rem;
-          }
-
-          .asca-eval-form .section-title {
-            font-size: 1.1rem;
-            margin-bottom: 0.75rem;
-            padding-bottom: 0.4rem;
-          }
-
-          .asca-eval-form .opinion-field {
-            margin-bottom: 1rem;
-          }
-
-          .asca-eval-form .opinion-title {
-            font-size: 0.9rem;
-            margin-bottom: 0.3rem;
-          }
-
-          .asca-eval-form textarea {
-            min-height: 100px !important;
-            padding: 8px;
-            font-size: 0.9rem;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .asca-eval-form {
-            padding: 0.75rem 0.5rem;
-          }
-
-          .asca-eval-form .title {
-            font-size: 16pt;
-          }
-
-          .asca-eval-form textarea {
-            min-height: 80px !important;
-          }
-        }
-        `}
-      </style>
+        <Button
+          onClick={handleDownloadMarkdown}
+          className="py-5 px-8 text-lg bg-emerald-600 hover:bg-emerald-700"
+          disabled={isExportingMarkdown}
+        >
+          {isExportingMarkdown ? '내보내는 중...' : '마크다운 내보내기'}
+          <FileOutput className="ml-2 h-5 w-5" />
+        </Button>
+      </div>
+      
+      <SectionFooter
+        currentDate={currentDate}
+        signature={signatureName}
+        setSignature={setSignatureName}
+        handleCsvExport={handleExportCSV}
+        handleMarkdownDownload={handleDownloadMarkdown}
+        isCsvGenerating={isExportingCSV}
+        isMarkdownGenerating={isExportingMarkdown}
+      />
     </section>
   );
 };
