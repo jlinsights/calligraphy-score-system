@@ -1,79 +1,98 @@
 import React from 'react';
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Save, FileText } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { FileDown, FileText } from "lucide-react";
 
-interface SectionFooterProps {
+export interface SectionFooterProps {
   currentDate: string;
   signature: string;
   setSignature: (value: string) => void;
-  signatureLabel?: string;
-  handleCsvExport: () => void;
+  handlePdfDownload?: () => void;
+  handleCsvExport?: () => void;
   handleMarkdownDownload?: () => void;
+  isPdfGenerating?: boolean;
   isCsvGenerating?: boolean;
   isMarkdownGenerating?: boolean;
-  copyrightYear?: number;
-  organizationName?: string;
 }
 
 const SectionFooter: React.FC<SectionFooterProps> = ({
   currentDate,
   signature,
   setSignature,
-  signatureLabel = "심사위원",
+  handlePdfDownload,
   handleCsvExport,
   handleMarkdownDownload,
+  isPdfGenerating = false,
   isCsvGenerating = false,
-  isMarkdownGenerating = false,
-  copyrightYear = new Date().getFullYear(),
-  organizationName = "동양서예협회 (Oriental Calligraphy Association)"
+  isMarkdownGenerating = false
 }) => {
   return (
-    <>
-      <div className="signature-section border-t border-primary pt-3 sm:pt-6 mt-4 sm:mt-8 flex flex-col sm:flex-row justify-between sm:items-end gap-3 sm:gap-0">
-        <p className="text-xs sm:text-sm text-foreground m-0 mb-1 sm:mb-0 pb-0 sm:pb-2">작성일: {currentDate}</p>
-        <div className="flex flex-col sm:flex-row items-start sm:items-baseline gap-1 sm:gap-2 w-full sm:w-auto">
-          <Label htmlFor="signature-input" className="font-bold whitespace-nowrap text-foreground text-sm mb-1 sm:mb-0">{signatureLabel}:</Label>
-          <div className="w-full sm:w-[200px] md:w-[250px] relative">
-            <Input 
-              id="signature-input"
-              value={signature}
-              onChange={(e) => setSignature(e.target.value)}
-              className="border-0 border-b border-input rounded-none bg-transparent px-0 py-1 sm:py-2 text-sm"
-              placeholder="이름을 입력하세요"
-            />
+    <div className="mt-6 bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-md text-gray-900 dark:text-gray-100 print:hidden">
+      <div className="space-y-4">
+        <div className="flex flex-col">
+          <Label htmlFor="signature" className="mb-1 text-sm">서명</Label>
+          <Input 
+            id="signature" 
+            type="text" 
+            value={signature}
+            onChange={(e) => setSignature(e.target.value)}
+            className="text-sm"
+            placeholder="심사위원 성명을 입력하세요"
+          />
+        </div>
+        
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-4">
+          <div className="text-xs sm:text-sm w-full sm:w-auto text-left">
+            <p>© {new Date().getFullYear()} 동양서예협회</p>
           </div>
-          <span className="text-xs sm:text-sm text-foreground whitespace-nowrap pb-0 sm:pb-2 mt-1 sm:mt-0">(서명)</span>
+          
+          <div className="flex flex-wrap gap-2 justify-end w-full sm:w-auto">
+            {handlePdfDownload && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handlePdfDownload}
+                disabled={isPdfGenerating}
+                className="flex items-center"
+              >
+                <FileText className="h-4 w-4 mr-1" />
+                <span className="text-xs">{isPdfGenerating ? "PDF 생성 중..." : "PDF 다운로드"}</span>
+              </Button>
+            )}
+            
+            {handleCsvExport && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleCsvExport}
+                disabled={isCsvGenerating}
+                className="flex items-center"
+              >
+                <FileDown className="h-4 w-4 mr-1" />
+                <span className="text-xs">{isCsvGenerating ? "CSV 생성 중..." : "CSV 다운로드"}</span>
+              </Button>
+            )}
+            
+            {handleMarkdownDownload && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleMarkdownDownload}
+                disabled={isMarkdownGenerating}
+                className="flex items-center"
+              >
+                <FileText className="h-4 w-4 mr-1" />
+                <span className="text-xs">{isMarkdownGenerating ? "마크다운 생성 중..." : "마크다운 다운로드"}</span>
+              </Button>
+            )}
+          </div>
         </div>
       </div>
-
-      <div className="button-container border-t border-primary pt-3 sm:pt-6 mt-3 sm:mt-6 flex flex-col-reverse sm:flex-row justify-between items-center gap-3 sm:gap-0">
-        <p className="text-[9px] sm:text-xs text-muted-foreground m-0 text-center sm:text-left w-full sm:w-auto mt-2 sm:mt-0">
-          © {copyrightYear} {organizationName}
-        </p>
-        <div className="flex gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
-          {handleMarkdownDownload && (
-            <Button 
-              onClick={handleMarkdownDownload}
-              disabled={isMarkdownGenerating}
-              className="bg-purple-600 hover:bg-purple-700 text-white text-xs sm:text-sm flex-1 sm:flex-initial h-9 sm:h-9 px-2 sm:px-3"
-            >
-              <FileText className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-              {isMarkdownGenerating ? '생성 중...' : 'MD 다운로드'}
-            </Button>
-          )}
-          <Button 
-            onClick={handleCsvExport}
-            disabled={isCsvGenerating}
-            className="bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm flex-1 sm:flex-initial h-9 sm:h-9 px-2 sm:px-3"
-          >
-            <Save className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-            {isCsvGenerating ? '생성 중...' : 'CSV 내보내기'}
-          </Button>
-        </div>
-      </div>
-    </>
+    </div>
   );
 };
 
