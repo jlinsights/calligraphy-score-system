@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Save, Plus, X, FileText, FileOutput } from 'lucide-react';
-import SectionFooter from "@/components/ui/section-footer";
+import { Save, Plus, X, FileText, FileOutput, FileDown } from 'lucide-react';
 import { generatePdfFromElement } from '@/utils/pdfUtils';
 import TurndownService from 'turndown';
 import { toast } from "@/components/ui/use-toast";
@@ -557,9 +556,50 @@ const ResultsSection = () => {
             </div>
           </div>
           
-          <div className="mt-4 text-right">
-            <p className="text-xs sm:text-sm">날짜: {currentDate}</p>
-            <p className="text-xs sm:text-sm mt-1">서명: {judgeSignature}</p>
+          <div className="signature-section border-t border-primary pt-3 sm:pt-6 mt-4 sm:mt-8 flex flex-col sm:flex-row justify-between sm:items-end gap-3 sm:gap-0">
+            <p className="text-xs sm:text-sm text-foreground m-0 mb-1 sm:mb-0 pb-0 sm:pb-2">작성일: {currentDate}</p>
+            <div className="flex flex-col sm:flex-row items-start sm:items-baseline gap-1 sm:gap-2 w-full sm:w-auto">
+              <Label htmlFor="signature-input" className="font-bold whitespace-nowrap text-foreground text-sm mb-1 sm:mb-0">심사위원:</Label>
+              <div className="w-full sm:w-[200px] md:w-[250px] relative">
+                <Input 
+                  id="signature-input"
+                  value={judgeSignature}
+                  onChange={(e) => setJudgeSignature(e.target.value)}
+                  className="border-0 border-b border-input rounded-none bg-transparent px-0 py-1 sm:py-2 text-sm"
+                  placeholder="이름을 입력하세요"
+                />
+              </div>
+              <span className="text-xs sm:text-sm text-foreground whitespace-nowrap pb-0 sm:pb-2 mt-1 sm:mt-0">(서명)</span>
+            </div>
+          </div>
+
+          <div className="button-container border-t border-primary pt-3 sm:pt-6 mt-3 sm:mt-6 flex flex-col-reverse sm:flex-row justify-between items-center gap-3 sm:gap-0">
+            <p className="text-[9px] sm:text-xs text-muted-foreground m-0 text-center sm:text-left w-full sm:w-auto mt-2 sm:mt-0">
+              © {new Date().getFullYear()} 동양서예협회 (The Asian Society of Calligraphic Arts)
+            </p>
+            <div className="flex flex-wrap gap-2 justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleExportCsv}
+                className="flex items-center"
+              >
+                <FileDown className="h-4 w-4 mr-1" />
+                <span className="text-xs">CSV 다운로드</span>
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleDownloadMarkdown}
+                disabled={isMarkdownGenerating}
+                className="flex items-center"
+              >
+                <FileText className="h-4 w-4 mr-1" />
+                <span className="text-xs">{isMarkdownGenerating ? "마크다운 생성 중..." : "마크다운 다운로드"}</span>
+              </Button>
+            </div>
           </div>
         </div>
         
@@ -576,41 +616,8 @@ const ResultsSection = () => {
               <span className="text-xs">행 추가</span>
             </Button>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleDownloadMarkdown}
-              disabled={isMarkdownGenerating}
-              className="flex items-center"
-            >
-              <FileOutput className="h-4 w-4 mr-1" />
-              <span className="text-xs">MD 내보내기</span>
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleExportCsv}
-              className="flex items-center"
-            >
-              <FileText className="h-4 w-4 mr-1" />
-              <span className="text-xs">CSV 내보내기</span>
-            </Button>
-          </div>
         </div>
       </div>
-      
-      <SectionFooter 
-        currentDate={currentDate}
-        signature={judgeSignature}
-        setSignature={setJudgeSignature}
-        handleCsvExport={handleExportCsv}
-        handleMarkdownDownload={handleDownloadMarkdown}
-        isCsvGenerating={false}
-        isMarkdownGenerating={isMarkdownGenerating}
-      />
     </div>
   );
 };

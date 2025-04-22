@@ -3,8 +3,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import './FeedbackSection.css';
 import { Label as UILabel } from '@/components/ui/label';
+import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import SectionFooter from "@/components/ui/section-footer";
 
 interface CategoryOpinion {
   id: string;
@@ -24,12 +24,12 @@ const FeedbackSection: React.FC = () => {
   const [artistName, setArtistName] = useState('');
   const [workTitle, setWorkTitle] = useState('');
   const [categoryOpinions, setCategoryOpinions] = useState<CategoryOpinion[]>([
-    { id: "creativity", name: "창의성(創意性)", opinion: "" },
-    { id: "authenticity", name: "진정성(眞情性)", opinion: "" },
-    { id: "skill", name: "기법성(技法性)", opinion: "" },
-    { id: "completeness", name: "완성도(完成度)", opinion: "" },
-    { id: "personality", name: "개성(個性)", opinion: "" },
-    { id: "originality", name: "독창성(獨創性)", opinion: "" }
+    { id: "hangul", name: "한글 부문", opinion: "" },
+    { id: "hanja", name: "한문 부문", opinion: "" },
+    { id: "modern", name: "현대서예 부문", opinion: "" },
+    { id: "calligraphy", name: "캘리그라피 부문", opinion: "" },
+    { id: "seal", name: "전각, 서각 부문", opinion: "" },
+    { id: "oriental", name: "문인화, 수묵화, 동양화, 민화 부문", opinion: "" }
   ]);
 
   useEffect(() => {
@@ -192,11 +192,28 @@ const FeedbackSection: React.FC = () => {
         />
       </div>
       
-      <SectionFooter 
-        currentDate={currentDate}
-        signature={signatureName}
-        setSignature={setSignatureName}
-      />
+      <div className="signature-section border-t border-primary pt-3 sm:pt-6 mt-4 sm:mt-8 flex flex-col sm:flex-row justify-between sm:items-end gap-3 sm:gap-0">
+        <p className="text-xs sm:text-sm text-foreground m-0 mb-1 sm:mb-0 pb-0 sm:pb-2">작성일: {currentDate}</p>
+        <div className="flex flex-col sm:flex-row items-start sm:items-baseline gap-1 sm:gap-2 w-full sm:w-auto">
+          <Label htmlFor="signature-input" className="font-bold whitespace-nowrap text-foreground text-sm mb-1 sm:mb-0">심사위원:</Label>
+          <div className="w-full sm:w-[200px] md:w-[250px] relative">
+            <Input 
+              id="signature-input"
+              value={signatureName}
+              onChange={(e) => setSignatureName(e.target.value)}
+              className="border-0 border-b border-input rounded-none bg-transparent px-0 py-1 sm:py-2 text-sm"
+              placeholder="이름을 입력하세요"
+            />
+          </div>
+          <span className="text-xs sm:text-sm text-foreground whitespace-nowrap pb-0 sm:pb-2 mt-1 sm:mt-0">(서명)</span>
+        </div>
+      </div>
+
+      <div className="button-container border-t border-primary pt-3 sm:pt-6 mt-3 sm:mt-6 flex flex-col-reverse sm:flex-row justify-between items-center gap-3 sm:gap-0">
+        <p className="text-[9px] sm:text-xs text-muted-foreground m-0 text-center sm:text-left w-full sm:w-auto mt-2 sm:mt-0">
+          © {new Date().getFullYear()} 동양서예협회 (The Asian Society of Calligraphic Arts)
+        </p>
+      </div>
     </section>
   );
 };
