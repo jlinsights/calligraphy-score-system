@@ -555,6 +555,38 @@ const ResultsSection = () => {
               </div>
             </div>
           </div>
+
+          <div className="form-section mb-6 border-b border-border pb-4 mt-6">
+            <h3 className="text-xl font-medium mb-2 text-foreground border-b border-primary pb-2 inline-block">등급결정 및 동점자 처리</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 className="font-medium mb-2 text-foreground">등급결정 기준</h4>
+                <ul className="list-disc pl-5 space-y-1 text-sm">
+                  <li>90점 이상: 대상 및 최우수상 후보</li>
+                  <li>85점 이상: 우수상 후보</li>
+                  <li>80점 이상: 특선 후보</li>
+                  <li>75점 이상: 입선 후보</li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-medium mb-2 text-foreground">동점자 발생시 처리방안</h4>
+                <ul className="list-disc pl-5 space-y-1 text-sm">
+                  <li>조화(調和) 점수가 높은 작품우선</li>
+                  <li>장법(章法) 점수가 높은 작품우선</li>
+                  <li>심사위원 간 협의를 통한 결정</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div className="form-section mb-6 border-b border-border pb-4">
+            <h3 className="text-xl font-medium mb-2 text-foreground border-b border-primary pb-2 inline-block">심사결과 확정</h3>
+            <ol className="list-decimal pl-5 space-y-1 text-sm">
+              <li>심사위원장은 종합심사 결과를 이사장에게 전달합니다.</li>
+              <li>이사회는 심사결과를 검토하고 최종 승인합니다.</li>
+              <li>확정된 심사결과는 수상자에게 개별 통보하며, 협회 홈페이지에 게시합니다.</li>
+            </ol>
+          </div>
           
           <div className="signature-section border-t border-primary pt-3 sm:pt-6 mt-4 sm:mt-8 flex flex-col sm:flex-row justify-between sm:items-end gap-3 sm:gap-0">
             <p className="text-xs sm:text-sm text-foreground m-0 mb-1 sm:mb-0 pb-0 sm:pb-2">작성일: {currentDate}</p>
