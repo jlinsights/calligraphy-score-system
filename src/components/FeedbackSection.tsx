@@ -3,14 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import './FeedbackSection.css';
 import { Label as UILabel } from '@/components/ui/label';
-import { Card, CardContent } from "@/components/ui/card";
 import SectionFooter from "@/components/ui/section-footer";
-
-interface CategoryOpinion {
-  id: string;
-  name: string;
-  opinion: string;
-}
 
 const FeedbackSection: React.FC = () => {
   const [currentDate, setCurrentDate] = useState('');
@@ -23,14 +16,6 @@ const FeedbackSection: React.FC = () => {
   const [category, setCategory] = useState('');
   const [artistName, setArtistName] = useState('');
   const [workTitle, setWorkTitle] = useState('');
-  const [categoryOpinions, setCategoryOpinions] = useState<CategoryOpinion[]>([
-    { id: "creativity", name: "창의성(創意性)", opinion: "" },
-    { id: "authenticity", name: "진정성(眞情性)", opinion: "" },
-    { id: "skill", name: "기법성(技法性)", opinion: "" },
-    { id: "completeness", name: "완성도(完成度)", opinion: "" },
-    { id: "personality", name: "개성(個性)", opinion: "" },
-    { id: "originality", name: "독창성(獨創性)", opinion: "" }
-  ]);
 
   useEffect(() => {
     const today = new Date();
@@ -51,21 +36,6 @@ const FeedbackSection: React.FC = () => {
     if (savedSignature) {
       setSignatureName(savedSignature);
     }
-    
-    // 카테고리 의견 로드
-    try {
-      const savedCategoryOpinions = localStorage.getItem('asca-opinion-categories');
-      if (savedCategoryOpinions) {
-        const parsedCategoryOpinions = JSON.parse(savedCategoryOpinions);
-        const updatedOpinions = categoryOpinions.map(category => {
-          const savedCategory = parsedCategoryOpinions.find((item: CategoryOpinion) => item.id === category.id);
-          return savedCategory ? { ...category, opinion: savedCategory.opinion } : category;
-        });
-        setCategoryOpinions(updatedOpinions);
-      }
-    } catch (error) {
-      console.error("Error loading category opinions from localStorage:", error);
-    }
   };
   
   const loadFromLocalStorage = (key: string) => {
@@ -76,27 +46,10 @@ const FeedbackSection: React.FC = () => {
   const saveToLocalStorage = (id: string, value: string) => {
     localStorage.setItem(`asca-opinion-${id}`, value);
   };
-  
-  // 카테고리 의견 저장
-  useEffect(() => {
-    try {
-      localStorage.setItem('asca-opinion-categories', JSON.stringify(categoryOpinions));
-    } catch (error) {
-      console.error("Error saving category opinions to localStorage:", error);
-    }
-  }, [categoryOpinions]);
 
   const handleGeneralOpinionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setGeneralOpinion(e.target.value);
     saveToLocalStorage('asca-general-opinion', e.target.value);
-  };
-
-  const handleCategoryOpinionChange = (id: string, value: string) => {
-    setCategoryOpinions(prevOpinions => 
-      prevOpinions.map(opinion => 
-        opinion.id === id ? { ...opinion, opinion: value } : opinion
-      )
-    );
   };
   
   return (
@@ -155,29 +108,6 @@ const FeedbackSection: React.FC = () => {
             value={generalOpinion}
             onChange={handleGeneralOpinionChange}
           />
-        </div>
-      </div>
-      
-      <div className="mb-6">
-        <UILabel className="text-lg font-medium mb-3 block">부문별 심사의견</UILabel>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {categoryOpinions.map((category) => (
-            <Card key={category.id} className="shadow-sm">
-              <CardContent className="p-3 sm:p-4">
-                <UILabel htmlFor={`category-${category.id}`} className="block font-medium text-sm sm:text-base mb-2 text-foreground">
-                  {category.name}
-                </UILabel>
-                <Textarea
-                  id={`category-${category.id}`}
-                  value={category.opinion}
-                  onChange={(e) => handleCategoryOpinionChange(category.id, e.target.value)}
-                  placeholder={`${category.name}에 대한 의견을 입력하세요.`}
-                  className="min-h-[80px] sm:min-h-[100px] w-full text-sm"
-                />
-              </CardContent>
-            </Card>
-          ))}
         </div>
       </div>
       
