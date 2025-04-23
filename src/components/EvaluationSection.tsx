@@ -3,17 +3,10 @@ import EvaluationHeader from '@/components/evaluation/EvaluationHeader';
 import EvaluationCriteriaTable from '@/components/evaluation/EvaluationCriteriaTable';
 import ScoreTable from '@/components/evaluation/ScoreTable';
 import GradingGuidelines from '@/components/schedule/GradingGuidelines';
-import SectionFooter from "@/components/ui/section-footer";
-import TurndownService from 'turndown';
 import { Button } from '@/components/ui/button';
-import { FileText, FileOutput, Save, AlertCircle } from 'lucide-react';
-import { jsPDF } from "jspdf";
-import html2canvas from "html2canvas";
+import { Save, AlertCircle, FileDown, FileText } from 'lucide-react';
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { Textarea } from "./ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { DownloadIcon, FileIcon } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { toast } from "./ui/use-toast";
 
@@ -47,13 +40,10 @@ const EvaluationSection = () => {
   const [compositionScore, setCompositionScore] = useState<number | null>(null);
   const [harmonyScore, setHarmonyScore] = useState<number | null>(null);
   const [totalScore, setTotalScore] = useState<number>(0);
-  const [isCsvGenerating, setIsCsvGenerating] = useState<boolean>(false);
-  const [isMarkdownGenerating, setIsMarkdownGenerating] = useState<boolean>(false);
-  const [isExportingPdf, setIsExportingPdf] = useState(false);
-  const [isExportingCsv, setIsExportingCsv] = useState(false);
-  const [isExportingMarkdown, setIsExportingMarkdown] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [isCsvGenerating, setIsCsvGenerating] = useState(false);
+  const [isMarkdownGenerating, setIsMarkdownGenerating] = useState(false);
 
   useEffect(() => {
     generateSeriesNumber();
@@ -168,6 +158,16 @@ const EvaluationSection = () => {
 
       // 새로운 심사표를 위해 입력 필드 초기화
       resetForm();
+      
+      // 저장 후 심사결과종합표로 이동
+      setTimeout(() => {
+        window.location.href = '/results';
+        toast({
+          title: "심사결과종합표로 이동",
+          description: "심사 결과를 저장하고 심사결과종합표로 이동합니다.",
+          duration: 3000,
+        });
+      }, 1000);
     } catch (error) {
       console.error('저장 중 오류 발생:', error);
       alert('심사 결과를 저장하는 중 오류가 발생했습니다.');
@@ -186,132 +186,6 @@ const EvaluationSection = () => {
     setHarmonyScore(null);
     setTotalScore(0);
     // 부문과 심사위원 서명은 유지
-  };
-
-  const handleCsvExport = () => {
-    try {
-      setIsCsvGenerating(true);
-      let csvContent = `\uFEFF작성일:,${currentDate}\n`;
-      csvContent += `심사 부문:,${category}\n`;
-      csvContent += `작품 번호:,${seriesNumber}\n`;
-      csvContent += `작가명:,${artistName}\n`;
-      csvContent += `작품명:,${workTitle}\n\n`;
-      
-      csvContent += '평가 항목,배점,점수\n';
-      csvContent += `점획(點劃),40,${pointsScore || 0}\n`;
-      csvContent += `결구(結構),25,${structureScore || 0}\n`;
-      csvContent += `장법(章法),20,${compositionScore || 0}\n`;
-      csvContent += `조화(調和),15,${harmonyScore || 0}\n`;
-      csvContent += `총점,100,${totalScore}\n\n`;
-      
-      csvContent += `심사위원:,${judgeSignature}`;
-      
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      const filename = `심사표_${category || '전체'}_${artistName || '무제'}_${new Date().toISOString().split('T')[0]}.csv`;
-      
-      link.setAttribute("href", url);
-      link.setAttribute("download", filename);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
-      // 심사 결과 저장 호출
-      if (category && artistName && workTitle && 
-          pointsScore !== null && structureScore !== null && 
-          compositionScore !== null && harmonyScore !== null) {
-        saveToLocalStorage();
-      }
-      
-      // 저장 후 심사결과종합표로 이동
-      setTimeout(() => {
-        window.location.href = '/results';
-        toast({
-          title: "심사결과종합표로 이동",
-          description: "심사 결과를 저장하고 심사결과종합표로 이동합니다.",
-          duration: 3000,
-        });
-      }, 1000);
-      
-    } catch (error) {
-      console.error("CSV 생성 오류:", error);
-      alert("CSV 파일을 생성하는 중 오류가 발생했습니다.");
-    } finally {
-      setIsCsvGenerating(false);
-    }
-  };
-
-  const handleDownloadMarkdown = async () => {
-    try {
-      setIsExportingMarkdown(true);
-      const turndownService = new TurndownService();
-
-      // 현재 날짜와 시간 포맷
-      const now = new Date();
-      const dateStr = now.toISOString().split('T')[0];
-      const timeStr = now.toTimeString().split(' ')[0];
-      
-      // 마크다운 컨텐츠 생성
-      let markdownContent = `# 서예 작품 평가\n\n`;
-      markdownContent += `## 작품 정보\n\n`;
-      markdownContent += `- **일련 번호**: ${seriesNumber || '미지정'}\n`;
-      markdownContent += `- **평가 일자**: ${currentDate || new Date().toLocaleDateString()}\n`;
-      markdownContent += `- **부문**: ${category || '미지정'}\n`;
-      markdownContent += `- **작가명**: ${artistName || '미지정'}\n`;
-      markdownContent += `- **작품명**: ${workTitle || '미지정'}\n\n`;
-      
-      markdownContent += `## 점수 평가\n\n`;
-      markdownContent += `| 평가 항목 | 점수 | 최대 점수 |\n`;
-      markdownContent += `|---------|-----|--------|\n`;
-      markdownContent += `| 점획(點劃) | ${pointsScore} | 25 |\n`;
-      markdownContent += `| 결구(結構) | ${structureScore} | 25 |\n`;
-      markdownContent += `| 장법(章法) | ${compositionScore} | 25 |\n`;
-      markdownContent += `| 조화(調和) | ${harmonyScore} | 25 |\n`;
-      markdownContent += `| **총점** | **${totalScore}** | **100** |\n\n`;
-      
-      markdownContent += `## 종합 의견\n\n${judgeSignature || '(의견이 없습니다)'}\n\n`;
-      
-      markdownContent += `## 심사위원\n\n`;
-      markdownContent += `${judgeSignature || '미지정'}\n\n`;
-      markdownContent += `---\n\n`;
-      markdownContent += `생성일시: ${dateStr} ${timeStr}`;
-      
-      // 파일 다운로드
-      const blob = new Blob([markdownContent], { type: 'text/markdown' });
-      const url = URL.createObjectURL(blob);
-      const downloadLink = document.createElement('a');
-      downloadLink.href = url;
-      downloadLink.download = `서예심사_평가_${seriesNumber || '미지정'}_${dateStr}.md`;
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
-      URL.revokeObjectURL(url);
-      
-      // 심사 결과 저장 호출
-      if (category && artistName && workTitle && 
-          pointsScore !== null && structureScore !== null && 
-          compositionScore !== null && harmonyScore !== null) {
-        saveToLocalStorage();
-      }
-      
-      // 저장 후 심사결과종합표로 이동
-      setTimeout(() => {
-        window.location.href = '/results';
-        toast({
-          title: "심사결과종합표로 이동",
-          description: "심사 결과를 저장하고 심사결과종합표로 이동합니다.",
-          duration: 3000,
-        });
-      }, 1000);
-      
-    } catch (error) {
-      console.error('Markdown 다운로드 오류:', error);
-    } finally {
-      setIsExportingMarkdown(false);
-    }
   };
 
   const renderScoreRange = (category: string, min: number, max: number) => {
@@ -336,6 +210,109 @@ const EvaluationSection = () => {
       );
     }
     return buttons;
+  };
+
+  // CSV 다운로드 기능 추가
+  const handleCsvExport = () => {
+    try {
+      setIsCsvGenerating(true);
+      
+      // CSV 데이터 생성
+      let csvContent = `\uFEFF작품 번호,${seriesNumber}\n`;
+      csvContent += `심사 부문,${category}\n`;
+      csvContent += `작가명,${artistName}\n`;
+      csvContent += `작품명,${workTitle}\n\n`;
+      
+      csvContent += `평가 항목,배점,점수\n`;
+      csvContent += `필획 (点画),40,${pointsScore || ''}\n`;
+      csvContent += `결구 (結構),25,${structureScore || ''}\n`;
+      csvContent += `장법 (章法),20,${compositionScore || ''}\n`;
+      csvContent += `조화 (調和),15,${harmonyScore || ''}\n`;
+      csvContent += `총점,100,${totalScore}\n\n`;
+      
+      csvContent += `작성일,${currentDate}\n`;
+      csvContent += `심사위원,${judgeSignature}`;
+      
+      // 파일 다운로드
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const filename = `심사표_${seriesNumber}_${artistName || 'unknown'}.csv`;
+      
+      link.setAttribute("href", url);
+      link.setAttribute("download", filename);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+    } catch (error) {
+      console.error("CSV 생성 오류:", error);
+      alert("CSV 파일을 생성하는 중 오류가 발생했습니다.");
+    } finally {
+      setIsCsvGenerating(false);
+    }
+  };
+  
+  // 마크다운 다운로드 기능 추가
+  const handleDownloadMarkdown = () => {
+    try {
+      setIsMarkdownGenerating(true);
+      
+      // 마크다운 콘텐츠 생성
+      let markdownContent = `# 심사표\n\n`;
+      markdownContent += `- 작품 번호: ${seriesNumber}\n`;
+      markdownContent += `- 심사 부문: ${category}\n`;
+      markdownContent += `- 작가명: ${artistName}\n`;
+      markdownContent += `- 작품명: ${workTitle}\n\n`;
+      
+      markdownContent += `## 평가 점수\n\n`;
+      markdownContent += `| 평가 항목 | 배점 | 점수 |\n`;
+      markdownContent += `|---------|-----|------|\n`;
+      markdownContent += `| 필획 (点画) | 40점 | ${pointsScore || '-'} |\n`;
+      markdownContent += `| 결구 (結構) | 25점 | ${structureScore || '-'} |\n`;
+      markdownContent += `| 장법 (章法) | 20점 | ${compositionScore || '-'} |\n`;
+      markdownContent += `| 조화 (調和) | 15점 | ${harmonyScore || '-'} |\n`;
+      markdownContent += `| **총점** | **100점** | **${totalScore}** |\n\n`;
+      
+      markdownContent += `### 등급결정 기준\n\n`;
+      markdownContent += `- 90점 이상: A등급 (대상 및 최우수상 후보)\n`;
+      markdownContent += `- 85-89점: B등급 (우수상 후보)\n`;
+      markdownContent += `- 80-84점: C등급 (특선 후보)\n`;
+      markdownContent += `- 75-79점: D등급 (입선 후보)\n`;
+      markdownContent += `- 75점 미만: 기준 미달\n\n`;
+      
+      markdownContent += `작성일: ${currentDate}\n\n`;
+      markdownContent += `심사위원: ${judgeSignature}`;
+      
+      // 파일 다운로드
+      const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      
+      // 파일명 생성
+      const filename = `심사표_${seriesNumber}_${artistName || 'unknown'}.md`;
+      link.setAttribute('download', filename);
+      
+      // 링크 클릭하여 다운로드
+      document.body.appendChild(link);
+      link.click();
+      
+      // 임시 요소 제거
+      setTimeout(() => {
+        if (document.body.contains(link)) {
+          document.body.removeChild(link);
+        }
+        URL.revokeObjectURL(url);
+        setIsMarkdownGenerating(false);
+      }, 100);
+    } catch (error) {
+      console.error('마크다운 내보내기 오류:', error);
+      setIsMarkdownGenerating(false);
+      alert('마크다운 파일을 생성하는 중 오류가 발생했습니다.');
+    }
   };
 
   return (
@@ -385,27 +362,54 @@ const EvaluationSection = () => {
           <Save className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
           {isSaving ? '저장 중...' : '심사 결과 저장'}
         </Button>
-        
-        <Button 
-          variant="outline" 
-          onClick={handleDownloadMarkdown}
-          disabled={isExportingMarkdown}
-          className="min-w-[140px] sm:min-w-[180px] h-8 sm:h-10 text-xs sm:text-sm"
-        >
-          {isExportingMarkdown ? "내보내는 중..." : "마크다운 내보내기"}
-          <FileOutput className="w-4 h-4 sm:w-5 sm:h-5 ml-1 sm:ml-2" />
-        </Button>
       </div>
 
-      <SectionFooter
-        currentDate={currentDate}
-        signature={judgeSignature}
-        setSignature={setJudgeSignature}
-        handleCsvExport={handleCsvExport}
-        handleMarkdownDownload={handleDownloadMarkdown}
-        isCsvGenerating={isCsvGenerating}
-        isMarkdownGenerating={isMarkdownGenerating}
-      />
+      <div className="signature-section border-t border-primary pt-3 sm:pt-6 mt-4 sm:mt-8 flex flex-col sm:flex-row justify-between sm:items-end gap-3 sm:gap-0">
+        <p className="text-xs sm:text-sm text-foreground m-0 mb-1 sm:mb-0 pb-0 sm:pb-2">작성일: {currentDate}</p>
+        <div className="flex flex-col sm:flex-row items-start sm:items-baseline gap-1 sm:gap-2 w-full sm:w-auto">
+          <Label htmlFor="signature-input" className="font-bold whitespace-nowrap text-foreground text-sm mb-1 sm:mb-0">심사위원:</Label>
+          <div className="w-full sm:w-[200px] md:w-[250px] relative">
+            <Input 
+              id="signature-input"
+              value={judgeSignature}
+              onChange={(e) => setJudgeSignature(e.target.value)}
+              className="border-0 border-b border-input rounded-none bg-transparent px-0 py-1 sm:py-2 text-sm"
+              placeholder="이름을 입력하세요"
+            />
+          </div>
+          <span className="text-xs sm:text-sm text-foreground whitespace-nowrap pb-0 sm:pb-2 mt-1 sm:mt-0">(서명)</span>
+        </div>
+      </div>
+
+      <div className="button-container border-t border-primary pt-3 sm:pt-6 mt-3 sm:mt-6 flex flex-col-reverse sm:flex-row justify-between items-center gap-3 sm:gap-0">
+        <p className="text-[9px] sm:text-xs text-muted-foreground m-0 text-center sm:text-left w-full sm:w-auto mt-2 sm:mt-0">
+          © {new Date().getFullYear()} 동양서예협회 (The Asian Society of Calligraphic Arts)
+        </p>
+        <div className="flex flex-wrap gap-2 justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleCsvExport}
+            disabled={isCsvGenerating}
+            className="flex items-center"
+          >
+            <FileDown className="h-4 w-4 mr-1" />
+            <span className="text-xs">{isCsvGenerating ? "CSV 생성 중..." : "CSV 다운로드"}</span>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleDownloadMarkdown}
+            disabled={isMarkdownGenerating}
+            className="flex items-center"
+          >
+            <FileText className="h-4 w-4 mr-1" />
+            <span className="text-xs">{isMarkdownGenerating ? "마크다운 생성 중..." : "마크다운 다운로드"}</span>
+          </Button>
+        </div>
+      </div>
     </section>
   );
 };

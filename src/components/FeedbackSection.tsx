@@ -5,6 +5,8 @@ import './FeedbackSection.css';
 import { Label as UILabel } from '@/components/ui/label';
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from '@/components/ui/button';
+import { FileDown, FileText } from 'lucide-react';
 
 interface CategoryOpinion {
   id: string;
@@ -23,6 +25,8 @@ const FeedbackSection: React.FC = () => {
   const [category, setCategory] = useState('');
   const [artistName, setArtistName] = useState('');
   const [workTitle, setWorkTitle] = useState('');
+  const [isCsvGenerating, setIsCsvGenerating] = useState(false);
+  const [isMarkdownGenerating, setIsMarkdownGenerating] = useState(false);
   const [categoryOpinions, setCategoryOpinions] = useState<CategoryOpinion[]>([
     { id: "hangul", name: "한글 부문", opinion: "" },
     { id: "hanja", name: "한문 부문", opinion: "" },
@@ -97,6 +101,113 @@ const FeedbackSection: React.FC = () => {
         opinion.id === id ? { ...opinion, opinion: value } : opinion
       )
     );
+  };
+  
+  // CSV 다운로드 기능 추가
+  const handleCsvExport = () => {
+    try {
+      setIsCsvGenerating(true);
+      
+      // CSV 데이터 생성
+      let csvContent = `\uFEFF작품 번호,${serialNumber}\n`;
+      csvContent += `심사 부문,${category}\n`;
+      csvContent += `작가명,${artistName}\n`;
+      csvContent += `작품명,${workTitle}\n\n`;
+      
+      csvContent += `전체 심사평\n`;
+      csvContent += `"${generalOpinion}"\n\n`;
+      
+      csvContent += `부문별 심사의견\n`;
+      categoryOpinions.forEach(category => {
+        if (category.opinion) {
+          csvContent += `${category.name},"${category.opinion}"\n`;
+        }
+      });
+      
+      csvContent += `\n심사총평 및 제언\n`;
+      csvContent += `"${loadFromLocalStorage('overall-summary')}"\n\n`;
+      
+      csvContent += `작성일,${currentDate}\n`;
+      csvContent += `심사위원,${signatureName}`;
+      
+      // 파일 다운로드
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const filename = `심사의견서_${serialNumber}_${artistName || 'unknown'}.csv`;
+      
+      link.setAttribute("href", url);
+      link.setAttribute("download", filename);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+    } catch (error) {
+      console.error("CSV 생성 오류:", error);
+      alert("CSV 파일을 생성하는 중 오류가 발생했습니다.");
+    } finally {
+      setIsCsvGenerating(false);
+    }
+  };
+  
+  // 마크다운 다운로드 기능 추가
+  const handleDownloadMarkdown = () => {
+    try {
+      setIsMarkdownGenerating(true);
+      
+      // 마크다운 콘텐츠 생성
+      let markdownContent = `# 심사 의견서\n\n`;
+      markdownContent += `- 작품 번호: ${serialNumber}\n`;
+      markdownContent += `- 심사 부문: ${category}\n`;
+      markdownContent += `- 작가명: ${artistName}\n`;
+      markdownContent += `- 작품명: ${workTitle}\n\n`;
+      
+      markdownContent += `## 전체 심사평\n\n`;
+      markdownContent += `${generalOpinion}\n\n`;
+      
+      markdownContent += `## 부문별 심사의견\n\n`;
+      categoryOpinions.forEach(category => {
+        if (category.opinion) {
+          markdownContent += `### ${category.name}\n\n`;
+          markdownContent += `${category.opinion}\n\n`;
+        }
+      });
+      
+      markdownContent += `## 심사총평 및 제언\n\n`;
+      markdownContent += `${loadFromLocalStorage('overall-summary')}\n\n`;
+      
+      markdownContent += `작성일: ${currentDate}\n\n`;
+      markdownContent += `심사위원: ${signatureName}`;
+      
+      // 파일 다운로드
+      const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      
+      // 파일명 생성
+      const filename = `심사의견서_${serialNumber}_${artistName || 'unknown'}.md`;
+      link.setAttribute('download', filename);
+      
+      // 링크 클릭하여 다운로드
+      document.body.appendChild(link);
+      link.click();
+      
+      // 임시 요소 제거
+      setTimeout(() => {
+        if (document.body.contains(link)) {
+          document.body.removeChild(link);
+        }
+        URL.revokeObjectURL(url);
+        setIsMarkdownGenerating(false);
+      }, 100);
+    } catch (error) {
+      console.error('마크다운 내보내기 오류:', error);
+      setIsMarkdownGenerating(false);
+      alert('마크다운 파일을 생성하는 중 오류가 발생했습니다.');
+    }
   };
   
   return (
@@ -213,6 +324,30 @@ const FeedbackSection: React.FC = () => {
         <p className="text-[9px] sm:text-xs text-muted-foreground m-0 text-center sm:text-left w-full sm:w-auto mt-2 sm:mt-0">
           © {new Date().getFullYear()} 동양서예협회 (The Asian Society of Calligraphic Arts)
         </p>
+        <div className="flex flex-wrap gap-2 justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleCsvExport}
+            disabled={isCsvGenerating}
+            className="flex items-center"
+          >
+            <FileDown className="h-4 w-4 mr-1" />
+            <span className="text-xs">{isCsvGenerating ? "CSV 생성 중..." : "CSV 다운로드"}</span>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleDownloadMarkdown}
+            disabled={isMarkdownGenerating}
+            className="flex items-center"
+          >
+            <FileText className="h-4 w-4 mr-1" />
+            <span className="text-xs">{isMarkdownGenerating ? "마크다운 생성 중..." : "마크다운 다운로드"}</span>
+          </Button>
+        </div>
       </div>
     </section>
   );

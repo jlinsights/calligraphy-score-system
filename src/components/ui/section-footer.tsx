@@ -48,20 +48,6 @@ const SectionFooter: React.FC<SectionFooterProps> = ({
           </div>
           
           <div className="flex flex-wrap gap-2 justify-end w-full sm:w-auto">
-            {handlePdfDownload && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handlePdfDownload}
-                disabled={isPdfGenerating}
-                className="flex items-center"
-              >
-                <FileText className="h-4 w-4 mr-1" />
-                <span className="text-xs">{isPdfGenerating ? "PDF 생성 중..." : "PDF 다운로드"}</span>
-              </Button>
-            )}
-            
             {handleCsvExport && (
               <Button
                 type="button"

@@ -40,7 +40,7 @@ const FormFooter: React.FC<FormFooterProps> = ({
 
       <div className="button-container border-t border-primary pt-4 sm:pt-6 mt-4 sm:mt-6 flex flex-col-reverse sm:flex-row justify-between items-center gap-3 sm:gap-0">
         <p className="text-[10px] sm:text-xs text-muted-foreground m-0 text-center sm:text-left w-full sm:w-auto">
-          © {new Date().getFullYear()} 동양서예협회 (Oriental Calligraphy Association)
+          © {new Date().getFullYear()} 동양서예협회 (The Asian Society of Calligraphic Arts)
         </p>
         <div className="flex gap-2 w-full sm:w-auto">
           <Button 

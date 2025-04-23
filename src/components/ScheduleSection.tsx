@@ -232,10 +232,10 @@ const ScheduleSection = () => {
       markdownContent += `### 평가항목 및 배점\n\n`;
       markdownContent += `| 평가 항목 | 배점 |\n`;
       markdownContent += `|---------|-----|\n`;
-      markdownContent += `| 필획 (点画) | 40점 |\n`;
+      markdownContent += `| 필획 (点画) | 25점 |\n`;
       markdownContent += `| 결구 (結構) | 25점 |\n`;
-      markdownContent += `| 장법 (章法) | 20점 |\n`;
-      markdownContent += `| 조화 (調和) | 15점 |\n`;
+      markdownContent += `| 장법 (章法) | 25점 |\n`;
+      markdownContent += `| 조화 (調和) | 25점 |\n`;
       markdownContent += `| **계** | **100점** |\n\n`;
       
       markdownContent += `### 등급결정 기준\n\n`;
@@ -320,17 +320,6 @@ const ScheduleSection = () => {
           © {new Date().getFullYear()} 동양서예협회 (The Asian Society of Calligraphic Arts)
         </p>
         <div className="flex flex-wrap gap-2 justify-end">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handlePdfDownload}
-            disabled={isPdfGenerating}
-            className="flex items-center"
-          >
-            <FileText className="h-4 w-4 mr-1" />
-            <span className="text-xs">{isPdfGenerating ? "PDF 생성 중..." : "PDF 다운로드"}</span>
-          </Button>
           <Button
             type="button"
             variant="outline"
