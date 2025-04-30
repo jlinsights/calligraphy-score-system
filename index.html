@@ -8,7 +8,7 @@
     <meta name="author" content="The Asian Society of Calligraphic Arts" />
 
     <!-- 파비콘 설정 -->
-    <link rel="icon" href="./favicon.ico" type="image/x-icon">
+    <link rel="icon" href="./favicon.ico" type="image/x-icon" id="favicon">
     <link rel="shortcut icon" href="./favicon.ico" type="image/x-icon">
     <link rel="apple-touch-icon" href="./icons/icon-192x192.png">
     <link rel="manifest" href="./manifest.json">
@@ -21,6 +21,29 @@
     <meta property="og:description" content="Oriental Calligraphy Evaluation Management System" />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="./icons/icon-512x512.png" />
+
+    <!-- 다크 모드에 따른 파비콘 변경 스크립트 -->
+    <script>
+      // 다크 모드 감지 및 파비콘 변경 함수
+      function updateFavicon() {
+        const favicon = document.getElementById('favicon');
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          // 다크 모드일 때
+          favicon.href = './logo-light.png';
+        } else {
+          // 라이트 모드일 때
+          favicon.href = './logo-black.png';
+        }
+      }
+
+      // 페이지 로드 시 파비콘 업데이트
+      updateFavicon();
+
+      // 시스템 다크 모드 변경 감지
+      if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateFavicon);
+      }
+    </script>
   </head>
 
   <body>
