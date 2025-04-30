@@ -258,10 +258,11 @@ const FeedbackSection: React.FC = () => {
       </div>
       
       <div className="mb-6">
+        {/* Force cache invalidation - updated on: 1746057059 */}
         <UILabel htmlFor="overall-summary" className="text-lg font-medium mb-1 block">심사총평 및 제언</UILabel>
         <Textarea 
           id="overall-summary" 
-          placeholder="심사 결과에 대한 총평 및 제언사항을 작성해주세요." 
+          placeholder="작품에 대한 총평 및 제언사항을 자세히 작성해주세요." 
           className="min-h-[150px]"
           value={overallSummary}
           onChange={handleOverallSummaryChange}
