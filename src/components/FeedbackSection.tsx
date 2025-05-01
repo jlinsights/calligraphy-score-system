@@ -30,7 +30,7 @@ const FeedbackSection: React.FC = () => {
     { id: "modern", name: "현대서예 부문", opinion: "" },
     { id: "calligraphy", name: "캘리그라피 부문", opinion: "" },
     { id: "seal", name: "전각, 서각 부문", opinion: "" },
-    { id: "oriental", name: "문인화, 수묵화, 동양화, 민화 부문", opinion: "" }
+    { id: "oriental", name: "문인화/수묵화", opinion: "" }
   ]);
 
   useEffect(() => {
@@ -206,27 +206,27 @@ const FeedbackSection: React.FC = () => {
     <section className="calligraphy-section" id="feedback-form" ref={formRef}>
       <h2 className="calligraphy-section-title">심사 의견서</h2>
       
-      <div className="flex flex-col space-y-4 mb-6">
+      <div className="flex flex-col space-y-3 mb-5">
         <div>
-          <UILabel htmlFor="general-opinion" className="text-lg font-medium mb-1 block">전체 심사평</UILabel>
+          <UILabel htmlFor="general-opinion" className="text-base md:text-lg font-medium mb-1 block">전체 심사평</UILabel>
           <Textarea 
             id="general-opinion" 
             placeholder="작품에 대한 전체적인 심사평을 작성해주세요." 
-            className="min-h-[150px]"
+            className="min-h-[120px] md:min-h-[150px] text-sm md:text-base"
             value={generalOpinion}
             onChange={handleGeneralOpinionChange}
           />
         </div>
       </div>
       
-      <div className="mb-6">
-        <UILabel className="text-lg font-medium mb-3 block">부문별 심사의견</UILabel>
+      <div className="mb-5">
+        <UILabel className="text-base md:text-lg font-medium mb-2 block">부문별 심사의견</UILabel>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           {categoryOpinions.map((category) => (
             <Card key={category.id} className="shadow-sm">
-              <CardContent className="p-3 sm:p-4">
-                <UILabel htmlFor={`category-${category.id}`} className="block font-medium text-sm sm:text-base mb-2 text-foreground">
+              <CardContent className="p-2 sm:p-3 md:p-4">
+                <UILabel htmlFor={`category-${category.id}`} className="block font-medium text-xs sm:text-sm md:text-base mb-1 md:mb-2 text-foreground">
                   {category.name}
                 </UILabel>
                 <Textarea
@@ -234,7 +234,7 @@ const FeedbackSection: React.FC = () => {
                   value={category.opinion}
                   onChange={(e) => handleCategoryOpinionChange(category.id, e.target.value)}
                   placeholder={`${category.name}에 대한 의견을 입력하세요.`}
-                  className="min-h-[80px] sm:min-h-[100px] w-full text-sm"
+                  className="min-h-[70px] sm:min-h-[80px] md:min-h-[100px] w-full text-xs sm:text-sm"
                 />
               </CardContent>
             </Card>
@@ -242,20 +242,19 @@ const FeedbackSection: React.FC = () => {
         </div>
       </div>
       
-      <div className="mb-6">
-        {/* Force cache invalidation - updated on: 1746057059 */}
-        <UILabel htmlFor="overall-summary" className="text-lg font-medium mb-1 block">심사총평 및 제언</UILabel>
+      <div className="mb-5">
+        <UILabel htmlFor="overall-summary" className="text-base md:text-lg font-medium mb-1 block">심사총평 및 제언</UILabel>
         <Textarea 
           id="overall-summary" 
           placeholder="작품에 대한 총평 및 제언사항을 자세히 작성해주세요." 
-          className="min-h-[150px]"
+          className="min-h-[120px] md:min-h-[150px] text-sm md:text-base"
           value={overallSummary}
           onChange={handleOverallSummaryChange}
         />
       </div>
       
-      <div className="signature-section border-t border-primary pt-3 sm:pt-6 mt-4 sm:mt-8 flex flex-col sm:flex-row justify-between sm:items-end gap-3 sm:gap-0">
-        <p className="text-xs sm:text-sm text-foreground m-0 mb-1 sm:mb-0 pb-0 sm:pb-2">작성일: {currentDate}</p>
+      <div className="signature-section border-t border-primary pt-2 sm:pt-4 md:pt-6 mt-3 md:mt-6 flex flex-col sm:flex-row justify-between sm:items-end gap-2 sm:gap-0">
+        <p className="text-xs text-foreground m-0 mb-1 sm:mb-0 pb-0 sm:pb-2">작성일: {currentDate}</p>
         <div className="flex flex-col sm:flex-row items-start sm:items-baseline gap-1 sm:gap-2 w-full sm:w-auto">
           <Label htmlFor="signature-input" className="font-bold whitespace-nowrap text-foreground text-sm mb-1 sm:mb-0">심사위원장:</Label>
           <div className="w-full sm:w-[200px] md:w-[250px] relative">
@@ -263,7 +262,7 @@ const FeedbackSection: React.FC = () => {
               id="signature-input"
               value={signatureName}
               onChange={(e) => setSignatureName(e.target.value)}
-              className="border-0 border-b border-input rounded-none bg-transparent px-0 py-1 sm:py-2 text-sm"
+              className="border-0 border-b border-input rounded-none bg-transparent px-0 py-1 text-sm"
               placeholder="이름을 입력하세요"
             />
           </div>
@@ -271,21 +270,21 @@ const FeedbackSection: React.FC = () => {
         </div>
       </div>
 
-      <div className="button-container border-t border-primary pt-3 sm:pt-6 mt-3 sm:mt-6 flex flex-col-reverse sm:flex-row justify-between items-center gap-3 sm:gap-0">
+      <div className="button-container border-t border-primary pt-2 sm:pt-4 md:pt-6 mt-2 sm:mt-4 flex flex-col-reverse sm:flex-row justify-between items-center gap-2 sm:gap-0">
         <p className="text-[9px] sm:text-xs text-muted-foreground m-0 text-center sm:text-left w-full sm:w-auto mt-2 sm:mt-0">
           © {new Date().getFullYear()} 동양서예협회 (The Asian Society of Calligraphic Arts)
         </p>
-        <div className="flex flex-wrap gap-2 justify-end">
+        <div className="flex flex-wrap gap-2 justify-center w-full sm:w-auto sm:justify-end">
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={handleCsvExport}
             disabled={isCsvGenerating}
-            className="flex items-center"
+            className="flex items-center px-2 py-1 h-auto text-xs sm:text-sm"
           >
-            <FileDown className="h-4 w-4 mr-1" />
-            <span className="text-xs">{isCsvGenerating ? "CSV 생성 중..." : "CSV 다운로드"}</span>
+            <FileDown className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+            <span>{isCsvGenerating ? "CSV 생성 중..." : "CSV 다운로드"}</span>
           </Button>
           <Button
             type="button"
@@ -293,10 +292,10 @@ const FeedbackSection: React.FC = () => {
             size="sm"
             onClick={handleDownloadMarkdown}
             disabled={isMarkdownGenerating}
-            className="flex items-center"
+            className="flex items-center px-2 py-1 h-auto text-xs sm:text-sm"
           >
-            <FileText className="h-4 w-4 mr-1" />
-            <span className="text-xs">{isMarkdownGenerating ? "마크다운 생성 중..." : "마크다운 다운로드"}</span>
+            <FileText className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+            <span>{isMarkdownGenerating ? "마크다운 생성 중..." : "마크다운 다운로드"}</span>
           </Button>
         </div>
       </div>
