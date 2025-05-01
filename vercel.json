@@ -73,6 +73,5 @@
   "env": {
     "VITE_DISABLE_MODULEPRELOAD_POLYFILL": "true"
   },
-  "alias": ["jury.orientalcalligraphy.org"],
-  "compress": true
+  "alias": ["jury.orientalcalligraphy.org"]
 }
