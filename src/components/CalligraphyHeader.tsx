@@ -16,19 +16,19 @@ const CalligraphyHeader = () => {
   }, [theme]);
 
   return (
-    <header className="relative py-8 md:py-12">
-      {/* 로고 및 외부 링크 */}
+    <header className="relative py-6 md:py-12">
+      {/* 데스크탑에서만 보이는 로고 */}
       <a 
         href="https://orientalcalligraphy.org" 
         target="_blank" 
         rel="noopener noreferrer"
-        className="absolute top-2 left-4 md:top-4 md:left-6 transition-opacity hover:opacity-80"
+        className="absolute top-4 left-6 transition-opacity hover:opacity-80 hidden md:block"
       >
         {logoSrc && (
           <img 
             src={logoSrc} 
             alt="동양서예협회 로고" 
-            className="w-24 md:w-28 h-auto"
+            className="w-28 h-auto"
             onError={(e) => {
               console.error('로고 이미지 로딩 오류:', e);
               // 에러 발생시 기본 이미지 경로 설정
@@ -39,9 +39,33 @@ const CalligraphyHeader = () => {
       </a>
 
       <div className="mx-auto max-w-4xl px-4 text-center">
-        <h1 className="text-4xl md:text-5xl mb-6 font-bold text-foreground tracking-tight transition-colors duration-200">동양서예 심사관리 시스템</h1>
-        <p className="text-muted-foreground mb-4 text-lg">Oriental Calligraphy Evaluation Management System</p>
-        <div className="w-24 h-1 bg-primary mx-auto mb-6"></div>
+        {/* 모바일에서만 보이는 중앙 정렬된 로고 */}
+        <div className="flex justify-center mb-3 md:hidden">
+          <a 
+            href="https://orientalcalligraphy.org" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="transition-opacity hover:opacity-80"
+          >
+            {logoSrc && (
+              <img 
+                src={logoSrc} 
+                alt="동양서예협회 로고" 
+                className="w-20 h-auto"
+                onError={(e) => {
+                  console.error('로고 이미지 로딩 오류:', e);
+                  e.currentTarget.src = '/placeholder.svg';
+                }}
+              />
+            )}
+          </a>
+        </div>
+        
+        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-4 md:mb-6 font-bold text-foreground tracking-tight transition-colors duration-200 leading-tight">
+          동양서예 심사관리 시스템
+        </h1>
+        <p className="text-sm sm:text-base md:text-lg text-muted-foreground mb-4">Oriental Calligraphy Evaluation System</p>
+        <div className="w-16 sm:w-20 md:w-24 h-1 bg-primary mx-auto mb-4 md:mb-6"></div>
       </div>
     </header>
   );
