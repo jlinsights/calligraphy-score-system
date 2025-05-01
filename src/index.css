@@ -294,15 +294,18 @@ table {
 /* 반응형 디자인 최적화 */
 @media (max-width: 768px) {
   .calligraphy-title {
-    @apply text-3xl mb-4 tracking-tight;
+    font-size: 1.875rem; /* text-3xl */
+    margin-bottom: 1rem; /* mb-4 */
+    letter-spacing: -0.025em; /* tracking-tight */
   }
 
   .calligraphy-section {
-    @apply p-4;
+    padding: 1rem; /* p-4 */
   }
 
   .calligraphy-section-title {
-    @apply text-lg mb-3;
+    font-size: 1.125rem; /* text-lg */
+    margin-bottom: 0.75rem; /* mb-3 */
   }
 
   /* 테이블 스크롤 처리 개선 */
@@ -313,137 +316,159 @@ table {
 
   /* 모바일에서 버튼 크기 및 간격 */
   button {
-    @apply text-sm py-1.5 px-2;
+    font-size: 0.875rem; /* text-sm */
+    padding: 0.375rem 0.5rem; /* py-1.5 px-2 */
   }
 
   /* 버튼 그룹 간격 조정 */
   .button-group {
-    @apply space-x-1 flex-wrap;
+    column-gap: 0.25rem; /* space-x-1 */
+    flex-wrap: wrap;
   }
 
   .button-group button {
-    @apply my-1;
+    margin-top: 0.25rem; /* my-1 */
+    margin-bottom: 0.25rem;
   }
 
   /* 입력 필드 크기 조정 */
   input, select, textarea {
-    @apply text-sm py-1.5 px-2 max-w-full;
+    font-size: 0.875rem; /* text-sm */
+    padding-top: 0.375rem; /* py-1.5 */
+    padding-bottom: 0.375rem;
+    padding-left: 0.5rem; /* px-2 */
+    padding-right: 0.5rem;
+    max-width: 100%;
   }
 
   /* 라벨 크기 조정 */
   label {
-    @apply text-sm;
+    font-size: 0.875rem; /* text-sm */
   }
 
   /* 점수 버튼 크기 조정 */
   button.w-8.h-8 {
-    @apply w-7 h-7 text-[10px];
+    width: 1.75rem; /* w-7 */
+    height: 1.75rem; /* h-7 */
+    font-size: 0.625rem; /* text-[10px] */
   }
   
   /* 페이지 패딩 최적화 */
   .container, .container-fluid {
-    @apply px-3;
+    padding-left: 0.75rem; /* px-3 */
+    padding-right: 0.75rem;
   }
   
   /* 모바일 텍스트 가독성 개선 */
   .font-medium {
-    @apply tracking-tight;
+    letter-spacing: -0.025em; /* tracking-tight */
   }
   
   /* 모바일에서 요소 간격 최적화 */
   .space-y-4, .space-y-6, .space-y-8 {
-    @apply space-y-3;
+    row-gap: 0.75rem; /* space-y-3 */
   }
   
   .gap-4, .gap-6 {
-    @apply gap-3;
+    gap: 0.75rem; /* gap-3 */
   }
   
   /* 모바일에서 버튼 그룹 레이아웃 개선 */
   .flex {
-    @apply flex-wrap;
+    flex-wrap: wrap;
   }
 }
 
 /* 더 작은 화면에 대한 추가 최적화 */
 @media (max-width: 576px) {
   .calligraphy-title {
-    @apply text-2xl mb-3;
+    font-size: 1.5rem; /* text-2xl */
+    margin-bottom: 0.75rem; /* mb-3 */
   }
 
   .calligraphy-section {
-    @apply p-3;
+    padding: 0.75rem; /* p-3 */
   }
 
   .calligraphy-section-title {
-    @apply text-base mb-2;
+    font-size: 1rem; /* text-base */
+    margin-bottom: 0.5rem; /* mb-2 */
   }
 
   /* 작은 화면에서의 폼 레이아웃 최적화 */
   .form-grid {
-    @apply grid-cols-1;
+    grid-template-columns: repeat(1, minmax(0, 1fr)); /* grid-cols-1 */
   }
 
   /* 점수 버튼 크기 추가 축소 */
   button.w-8.h-8, button.w-7.h-7 {
-    @apply w-6 h-6 text-[9px];
+    width: 1.5rem; /* w-6 */
+    height: 1.5rem; /* h-6 */
+    font-size: 0.5625rem; /* text-[9px] */
   }
   
   /* 초소형 화면에서 요소 간격 추가 최적화 */
   .space-y-3 {
-    @apply space-y-2;
+    row-gap: 0.5rem; /* space-y-2 */
   }
   
   .gap-3 {
-    @apply gap-2;
+    gap: 0.5rem; /* gap-2 */
   }
   
   /* 초소형 화면에서의 패딩 축소 */
   .p-3, .p-4 {
-    @apply p-2;
+    padding: 0.5rem; /* p-2 */
   }
   
   .px-3, .px-4 {
-    @apply px-2;
+    padding-left: 0.5rem; /* px-2 */
+    padding-right: 0.5rem;
   }
   
   .py-3, .py-4 {
-    @apply py-2;
+    padding-top: 0.5rem; /* py-2 */
+    padding-bottom: 0.5rem;
   }
   
   /* 초소형 화면에서 글꼴 크기 최적화 */
   .text-sm {
-    @apply text-xs;
+    font-size: 0.75rem; /* text-xs */
   }
   
   .text-base {
-    @apply text-sm;
+    font-size: 0.875rem; /* text-sm */
   }
   
   /* 버튼 터치 영역 개선 */
   button, .btn, [role="button"] {
-    @apply min-h-[36px];
+    min-height: 36px; /* min-h-[36px] */
   }
   
   /* 입력 필드 터치 영역 개선 */
   input, select, textarea {
-    @apply min-h-[36px];
+    min-height: 36px; /* min-h-[36px] */
   }
   
   /* 모바일 터치 최적화 */
   .touchable {
-    @apply cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center;
+    cursor: pointer;
+    min-height: 36px;
+    min-width: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 
 /* 초소형 모바일 화면에 대한 추가 최적화 */
 @media (max-width: 360px) {
   .calligraphy-title {
-    @apply text-xl;
+    font-size: 1.25rem; /* text-xl */
   }
   
   .calligraphy-section-title {
-    @apply text-sm;
+    font-size: 0.875rem; /* text-sm */
   }
   
   /* 버튼 텍스트 최적화 */
@@ -453,27 +478,28 @@ table {
   
   /* 모든 여백 추가 축소 */
   .m-2, .m-3 {
-    @apply m-1;
+    margin: 0.25rem; /* m-1 */
   }
   
   .mt-2, .mt-3 {
-    @apply mt-1;
+    margin-top: 0.25rem; /* mt-1 */
   }
   
   .mb-2, .mb-3 {
-    @apply mb-1;
+    margin-bottom: 0.25rem; /* mb-1 */
   }
   
   .mr-2, .mr-3 {
-    @apply mr-1;
+    margin-right: 0.25rem; /* mr-1 */
   }
   
   .ml-2, .ml-3 {
-    @apply ml-1;
+    margin-left: 0.25rem; /* ml-1 */
   }
   
   /* 아이콘 크기 축소 */
   svg {
-    @apply w-3 h-3;
+    width: 0.75rem; /* w-3 */
+    height: 0.75rem; /* h-3 */
   }
 }
