@@ -22,10 +22,6 @@ const FeedbackSection: React.FC = () => {
   
   const [generalOpinion, setGeneralOpinion] = useState('');
   const [overallSummary, setOverallSummary] = useState('');
-  const [serialNumber, setSerialNumber] = useState('');
-  const [category, setCategory] = useState('');
-  const [artistName, setArtistName] = useState('');
-  const [workTitle, setWorkTitle] = useState('');
   const [isCsvGenerating, setIsCsvGenerating] = useState(false);
   const [isMarkdownGenerating, setIsMarkdownGenerating] = useState(false);
   const [categoryOpinions, setCategoryOpinions] = useState<CategoryOpinion[]>([
@@ -41,10 +37,6 @@ const FeedbackSection: React.FC = () => {
     const today = new Date();
     const formattedDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     setCurrentDate(formattedDate);
-    
-    const datePart = formattedDate.replace(/-/g, '');
-    const randomPart = Math.floor(1000 + Math.random() * 9000);
-    setSerialNumber(`FD-${datePart}-${randomPart}`);
     
     loadAllFromLocalStorage();
   }, []);
@@ -116,10 +108,7 @@ const FeedbackSection: React.FC = () => {
       setIsCsvGenerating(true);
       
       // CSV 데이터 생성
-      let csvContent = `\uFEFF작품 번호,${serialNumber}\n`;
-      csvContent += `심사 부문,${category}\n`;
-      csvContent += `작가명,${artistName}\n`;
-      csvContent += `작품명,${workTitle}\n\n`;
+      let csvContent = `\uFEFF`;
       
       csvContent += `전체 심사평\n`;
       csvContent += `"${generalOpinion}"\n\n`;
@@ -141,7 +130,7 @@ const FeedbackSection: React.FC = () => {
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      const filename = `심사의견서_${serialNumber}_${artistName || 'unknown'}.csv`;
+      const filename = `심사의견서_${new Date().getTime()}.csv`;
       
       link.setAttribute("href", url);
       link.setAttribute("download", filename);
@@ -166,10 +155,6 @@ const FeedbackSection: React.FC = () => {
       
       // 마크다운 콘텐츠 생성
       let markdownContent = `# 심사 의견서\n\n`;
-      markdownContent += `- 작품 번호: ${serialNumber}\n`;
-      markdownContent += `- 심사 부문: ${category}\n`;
-      markdownContent += `- 작가명: ${artistName}\n`;
-      markdownContent += `- 작품명: ${workTitle}\n\n`;
       
       markdownContent += `## 전체 심사평\n\n`;
       markdownContent += `${generalOpinion}\n\n`;
@@ -195,7 +180,7 @@ const FeedbackSection: React.FC = () => {
       link.setAttribute('href', url);
       
       // 파일명 생성
-      const filename = `심사의견서_${serialNumber}_${artistName || 'unknown'}.md`;
+      const filename = `심사의견서_${new Date().getTime()}.md`;
       link.setAttribute('download', filename);
       
       // 링크 클릭하여 다운로드
