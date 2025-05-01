@@ -383,14 +383,14 @@ const ResultsSection = () => {
   };
 
   return (
-    <div className="container mx-auto px-2 sm:px-4 py-4 md:py-8 font-sans">
-      <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-md text-gray-900 dark:text-gray-100">
-        <div className="mb-4 text-center">
-          <h1 className="text-2xl font-bold">심사 결과 종합표</h1>
+    <div className="container mx-auto px-1 sm:px-4 py-2 md:py-8 font-sans">
+      <div className="bg-white dark:bg-gray-800 p-2 sm:p-4 md:p-6 rounded-lg shadow-md text-gray-900 dark:text-gray-100">
+        <div className="mb-2 sm:mb-4 text-center">
+          <h1 className="text-xl sm:text-2xl font-bold">심사 결과 종합표</h1>
         </div>
         
         <div ref={formRef} className="print-content">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-1 sm:gap-4 mb-2 sm:mb-4">
             <div className="flex flex-col">
               <Label htmlFor="evaluation-date" className="mb-1 text-xs sm:text-sm">심사 일시</Label>
               <Input 
@@ -398,13 +398,13 @@ const ResultsSection = () => {
                 type="date" 
                 value={evaluationDate}
                 onChange={(e) => setEvaluationDate(e.target.value)}
-                className="text-xs sm:text-sm py-1 h-8"
+                className="text-xs sm:text-sm py-1 h-7 sm:h-8"
               />
             </div>
             <div className="flex flex-col">
               <Label htmlFor="category" className="mb-1 text-xs sm:text-sm">심사 부문</Label>
               <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger id="category" className="text-xs sm:text-sm h-8">
+                <SelectTrigger id="category" className="text-xs sm:text-sm h-7 sm:h-8">
                   <SelectValue placeholder="심사 부문 선택" />
                 </SelectTrigger>
                 <SelectContent>
@@ -423,88 +423,88 @@ const ResultsSection = () => {
                 type="text" 
                 value={judgeSignature}
                 onChange={(e) => setJudgeSignature(e.target.value)}
-                className="text-xs sm:text-sm py-1 h-8"
+                className="text-xs sm:text-sm py-1 h-7 sm:h-8"
               />
             </div>
           </div>
           
-          <div className="overflow-x-auto -mx-4 sm:mx-0">
-            <div className="inline-block min-w-full py-2 align-middle">
-              <Table className="min-w-full border-collapse">
+          <div className="overflow-x-auto -mx-4 sm:-mx-2 md:mx-0">
+            <div className="inline-block min-w-full py-1 sm:py-2 align-middle">
+              <Table className="min-w-full border-collapse table-fixed">
                 <TableHeader className="bg-gray-100 dark:bg-gray-700">
                   <TableRow>
-                    <TableHead className="py-1 px-2 text-xs whitespace-nowrap">번호</TableHead>
-                    <TableHead className="py-1 px-2 text-xs">작가</TableHead>
-                    <TableHead className="py-1 px-2 text-xs">작품명</TableHead>
-                    <TableHead className="py-1 px-2 text-xs whitespace-nowrap">심사1</TableHead>
-                    <TableHead className="py-1 px-2 text-xs whitespace-nowrap">심사2</TableHead>
-                    <TableHead className="py-1 px-2 text-xs whitespace-nowrap">심사3</TableHead>
-                    <TableHead className="py-1 px-2 text-xs whitespace-nowrap">평균</TableHead>
-                    <TableHead className="py-1 px-2 text-xs whitespace-nowrap">순위</TableHead>
-                    <TableHead className="py-1 px-2 text-xs whitespace-nowrap">등급</TableHead>
-                    <TableHead className="py-1 px-2 text-xs whitespace-nowrap">비고</TableHead>
-                    <TableHead className="py-1 px-2 text-xs sr-only print:hidden">작업</TableHead>
+                    <TableHead className="py-1 px-1 sm:px-2 text-xs whitespace-nowrap w-[5%]">번호</TableHead>
+                    <TableHead className="py-1 px-1 sm:px-2 text-xs w-[20%] sm:w-[15%]">작가</TableHead>
+                    <TableHead className="py-1 px-1 sm:px-2 text-xs w-[25%] sm:w-[20%]">작품명</TableHead>
+                    <TableHead className="py-1 px-1 sm:px-2 text-xs whitespace-nowrap w-[7%] sm:w-[8%]">심사1</TableHead>
+                    <TableHead className="py-1 px-1 sm:px-2 text-xs whitespace-nowrap w-[7%] sm:w-[8%]">심사2</TableHead>
+                    <TableHead className="py-1 px-1 sm:px-2 text-xs whitespace-nowrap w-[7%] sm:w-[8%]">심사3</TableHead>
+                    <TableHead className="py-1 px-1 sm:px-2 text-xs whitespace-nowrap w-[7%] sm:w-[8%]">평균</TableHead>
+                    <TableHead className="py-1 px-1 sm:px-2 text-xs whitespace-nowrap w-[6%]">순위</TableHead>
+                    <TableHead className="py-1 px-1 sm:px-2 text-xs whitespace-nowrap w-[6%]">등급</TableHead>
+                    <TableHead className="py-1 px-1 sm:px-2 text-xs whitespace-nowrap w-[10%]">비고</TableHead>
+                    <TableHead className="py-1 px-1 sm:px-2 text-xs sr-only print:hidden w-[5%]">작업</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {resultsData.map((row) => (
                     <TableRow key={row.rowId} className="border-b border-gray-200 dark:border-gray-700">
-                      <TableCell className="py-1 px-2 text-xs">{row.displayId}</TableCell>
-                      <TableCell className="py-1 px-2">
+                      <TableCell className="py-1 px-1 sm:px-2 text-xs">{row.displayId}</TableCell>
+                      <TableCell className="py-1 px-1 sm:px-2">
                         <Input 
                           value={row.artist} 
                           onChange={(e) => handleInputChange(row.rowId, 'artist', e.target.value)}
-                          className="text-xs p-1 h-8 w-full"
+                          className="text-xs p-1 h-8 w-full min-w-[80px] sm:min-w-[90px]"
                         />
                       </TableCell>
-                      <TableCell className="py-1 px-2">
+                      <TableCell className="py-1 px-1 sm:px-2">
                         <Input 
                           value={row.title} 
                           onChange={(e) => handleInputChange(row.rowId, 'title', e.target.value)}
-                          className="text-xs p-1 h-8 w-full"
+                          className="text-xs p-1 h-8 w-full min-w-[90px] sm:min-w-[100px]"
                         />
                       </TableCell>
-                      <TableCell className="py-1 px-2">
+                      <TableCell className="py-1 px-1 sm:px-2">
                         <Input 
                           type="number"
                           min={0}
                           max={100}
                           value={row.score1} 
                           onChange={(e) => handleInputChange(row.rowId, 'score1', e.target.value)}
-                          className="text-xs p-1 h-8 w-16"
+                          className="text-xs p-1 h-8 w-10 sm:w-14"
                         />
                       </TableCell>
-                      <TableCell className="py-1 px-2">
+                      <TableCell className="py-1 px-1 sm:px-2">
                         <Input 
                           type="number"
                           min={0}
                           max={100}
                           value={row.score2} 
                           onChange={(e) => handleInputChange(row.rowId, 'score2', e.target.value)}
-                          className="text-xs p-1 h-8 w-16"
+                          className="text-xs p-1 h-8 w-10 sm:w-14"
                         />
                       </TableCell>
-                      <TableCell className="py-1 px-2">
+                      <TableCell className="py-1 px-1 sm:px-2">
                         <Input 
                           type="number"
                           min={0}
                           max={100}
                           value={row.score3} 
                           onChange={(e) => handleInputChange(row.rowId, 'score3', e.target.value)}
-                          className="text-xs p-1 h-8 w-16"
+                          className="text-xs p-1 h-8 w-10 sm:w-14"
                         />
                       </TableCell>
-                      <TableCell className="py-1 px-2 text-xs text-center">{row.average !== null ? row.average.toFixed(1) : ''}</TableCell>
-                      <TableCell className="py-1 px-2 text-xs text-center">{row.rank}</TableCell>
-                      <TableCell className={`py-1 px-2 text-xs text-center ${getGradeClass(row.grade)}`}>{row.grade}</TableCell>
-                      <TableCell className="py-1 px-2">
+                      <TableCell className="py-1 px-1 sm:px-2 text-xs text-center">{row.average !== null ? row.average.toFixed(1) : ''}</TableCell>
+                      <TableCell className="py-1 px-1 sm:px-2 text-xs text-center">{row.rank}</TableCell>
+                      <TableCell className={`py-1 px-1 sm:px-2 text-xs text-center ${getGradeClass(row.grade)}`}>{row.grade}</TableCell>
+                      <TableCell className="py-1 px-1 sm:px-2">
                         <Input 
                           value={row.remarks} 
                           onChange={(e) => handleInputChange(row.rowId, 'remarks', e.target.value)}
                           className="text-xs p-1 h-8 w-full"
                         />
                       </TableCell>
-                      <TableCell className="py-1 px-2 print:hidden">
+                      <TableCell className="py-1 px-1 sm:px-2 print:hidden">
                         <Button
                           type="button"
                           variant="ghost"
@@ -520,6 +520,19 @@ const ResultsSection = () => {
                 </TableBody>
               </Table>
             </div>
+          </div>
+          
+          <div className="flex justify-start mt-2 mb-4 print:hidden">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={addRow}
+              className="flex items-center h-auto py-1 px-2"
+            >
+              <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+              <span className="text-xs">행 추가</span>
+            </Button>
           </div>
           
           <div className="mt-6">
@@ -615,9 +628,9 @@ const ResultsSection = () => {
                 variant="outline"
                 size="sm"
                 onClick={handleExportCsv}
-                className="flex items-center"
+                className="flex items-center h-auto py-1 px-2"
               >
-                <FileDown className="h-4 w-4 mr-1" />
+                <FileDown className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                 <span className="text-xs">CSV 다운로드</span>
               </Button>
               <Button
@@ -626,27 +639,12 @@ const ResultsSection = () => {
                 size="sm"
                 onClick={handleDownloadMarkdown}
                 disabled={isMarkdownGenerating}
-                className="flex items-center"
+                className="flex items-center h-auto py-1 px-2"
               >
-                <FileText className="h-4 w-4 mr-1" />
+                <FileText className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                 <span className="text-xs">{isMarkdownGenerating ? "마크다운 생성 중..." : "마크다운 다운로드"}</span>
               </Button>
             </div>
-          </div>
-        </div>
-        
-        <div className="flex flex-wrap gap-2 justify-between items-center mt-6 print:hidden">
-          <div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={addRow}
-              className="flex items-center"
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              <span className="text-xs">행 추가</span>
-            </Button>
           </div>
         </div>
       </div>
