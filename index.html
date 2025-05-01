@@ -10,11 +10,10 @@
     <meta name="build-timestamp" content="1746056933" />
 
     <!-- 파비콘 설정 -->
-    <link rel="icon" href="./favicon.ico" type="image/x-icon" id="favicon">
-    <link rel="shortcut icon" href="./favicon.ico" type="image/x-icon">
-    <link rel="apple-touch-icon" href="./icons/icon-192x192.png">
+    <link rel="icon" href="./logo-black.png" type="image/png" id="favicon">
+    <link rel="apple-touch-icon" href="./logo-black.png" id="apple-touch-icon">
     <link rel="manifest" href="./manifest.json">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#ffffff" id="theme-color-meta">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="서예 심사">
@@ -29,12 +28,32 @@
       // 다크 모드 감지 및 파비콘 변경 함수
       function updateFavicon() {
         const favicon = document.getElementById('favicon');
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        const appleTouchIcon = document.getElementById('apple-touch-icon');
+        const themeColorMeta = document.getElementById('theme-color-meta');
+        
+        // localStorage에서 사용자 선택 테마 확인
+        const storedTheme = localStorage.getItem('theme');
+        let isDarkMode = false;
+        
+        if (storedTheme === 'dark') {
+          isDarkMode = true;
+        } else if (storedTheme === 'light') {
+          isDarkMode = false;
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          // 사용자가 테마를 선택하지 않았을 경우 시스템 설정 사용
+          isDarkMode = true;
+        }
+        
+        if (isDarkMode) {
           // 다크 모드일 때
           favicon.href = './logo-light.png';
+          appleTouchIcon.href = './logo-light.png';
+          themeColorMeta.content = '#1e1e2e';  // 다크 모드 배경색
         } else {
           // 라이트 모드일 때
           favicon.href = './logo-black.png';
+          appleTouchIcon.href = './logo-black.png';
+          themeColorMeta.content = '#ffffff';  // 라이트 모드 배경색
         }
       }
 
@@ -45,6 +64,16 @@
       if (window.matchMedia) {
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateFavicon);
       }
+      
+      // localStorage의 theme 변경 감지
+      window.addEventListener('storage', function(e) {
+        if (e.key === 'theme') {
+          updateFavicon();
+        }
+      });
+      
+      // 문서가 완전히 로드된 후에도 다시 확인
+      document.addEventListener('DOMContentLoaded', updateFavicon);
     </script>
   </head>
 
