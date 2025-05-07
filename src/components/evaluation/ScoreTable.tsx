@@ -28,16 +28,16 @@ const ScoreTable: React.FC<ScoreTableProps> = ({
           <Table className="border border-border min-w-full">
             <TableHeader>
               <TableRow>
-                <TableHead rowSpan={2} className="text-center bg-muted border border-border w-[20%] sm:w-[15%] text-xs sm:text-sm">평가항목</TableHead>
+                <TableHead rowSpan={2} className="text-center bg-muted border border-border w-[25%] sm:w-[20%] text-xs sm:text-sm">평가항목</TableHead>
                 <TableHead colSpan={5} className="text-center bg-muted border border-border text-xs sm:text-sm">득점 범위</TableHead>
-                <TableHead rowSpan={2} className="text-center bg-muted border border-border w-[15%] sm:w-[12%] text-xs sm:text-sm">획득점수</TableHead>
+                <TableHead rowSpan={2} className="text-center bg-muted border border-border w-[20%] sm:w-[18%] text-xs sm:text-sm">획득점수</TableHead>
               </TableRow>
               <TableRow>
-                <TableHead className="text-center bg-muted border border-border w-[12%] text-xs">1-5</TableHead>
-                <TableHead className="text-center bg-muted border border-border w-[12%] text-xs">6-10</TableHead>
-                <TableHead className="text-center bg-muted border border-border w-[12%] text-xs">11-15</TableHead>
-                <TableHead className="text-center bg-muted border border-border w-[12%] text-xs">16-20</TableHead>
-                <TableHead className="text-center bg-muted border border-border w-[12%] text-xs">21-25</TableHead>
+                <TableHead className="text-center bg-muted border border-border w-[10%] text-xs">1-5</TableHead>
+                <TableHead className="text-center bg-muted border border-border w-[10%] text-xs">6-10</TableHead>
+                <TableHead className="text-center bg-muted border border-border w-[10%] text-xs">11-15</TableHead>
+                <TableHead className="text-center bg-muted border border-border w-[10%] text-xs">16-20</TableHead>
+                <TableHead className="text-center bg-muted border border-border w-[10%] text-xs">21-25</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -62,7 +62,7 @@ const ScoreTable: React.FC<ScoreTableProps> = ({
                   <Input 
                     value={pointsScore !== null ? pointsScore.toString() : ''} 
                     readOnly
-                    className="text-center font-bold bg-muted w-[80%] mx-auto text-xs sm:text-sm"
+                    className="text-center font-bold bg-muted w-[90%] mx-auto text-xs sm:text-sm"
                   />
                 </TableCell>
               </TableRow>
@@ -88,7 +88,7 @@ const ScoreTable: React.FC<ScoreTableProps> = ({
                   <Input 
                     value={structureScore !== null ? structureScore.toString() : ''} 
                     readOnly
-                    className="text-center font-bold bg-muted w-[80%] mx-auto text-xs sm:text-sm"
+                    className="text-center font-bold bg-muted w-[90%] mx-auto text-xs sm:text-sm"
                   />
                 </TableCell>
               </TableRow>
@@ -114,7 +114,7 @@ const ScoreTable: React.FC<ScoreTableProps> = ({
                   <Input 
                     value={compositionScore !== null ? compositionScore.toString() : ''} 
                     readOnly
-                    className="text-center font-bold bg-muted w-[80%] mx-auto text-xs sm:text-sm"
+                    className="text-center font-bold bg-muted w-[90%] mx-auto text-xs sm:text-sm"
                   />
                 </TableCell>
               </TableRow>
@@ -140,7 +140,7 @@ const ScoreTable: React.FC<ScoreTableProps> = ({
                   <Input 
                     value={harmonyScore !== null ? harmonyScore.toString() : ''} 
                     readOnly
-                    className="text-center font-bold bg-muted w-[80%] mx-auto text-xs sm:text-sm"
+                    className="text-center font-bold bg-muted w-[90%] mx-auto text-xs sm:text-sm"
                   />
                 </TableCell>
               </TableRow>
@@ -153,7 +153,7 @@ const ScoreTable: React.FC<ScoreTableProps> = ({
                   <Input 
                     value={totalScore.toString()} 
                     readOnly
-                    className="text-center font-bold bg-muted w-[80%] mx-auto text-sm sm:text-base"
+                    className="text-center font-bold bg-muted w-[90%] mx-auto text-sm sm:text-base"
                   />
                 </TableCell>
               </TableRow>
