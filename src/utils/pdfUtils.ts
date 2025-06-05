@@ -1,5 +1,3 @@
-import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
 import html2canvas from 'html2canvas';
 
 /**
@@ -31,148 +29,152 @@ export const CONTENT_HEIGHT = A4_HEIGHT - MARGIN_TOP - MARGIN_BOTTOM;
  * @param date 날짜
  * @param signature 서명
  */
-export const generatePdfFromElement = async (
-  element: HTMLElement,
-  filename: string,
-  title: string = '',
-  date: string = '',
-  signature: string = ''
-): Promise<void> => {
+export async function generatePdfFromElement(
+  element: HTMLElement, 
+  filename: string, 
+  title?: string
+): Promise<void> {
   try {
-    // 기존 스타일 저장
-    const originalStyle = element.style.cssText;
+    // 동적 임포트로 jsPDF 로드
+    const { default: jsPDF } = await import('jspdf');
     
-    // HTML 요소 복제 및 스타일 적용
-    const clonedElement = element.cloneNode(true) as HTMLElement;
-    clonedElement.style.cssText = `
-      ${originalStyle}
-      font-family: 'Malgun Gothic', 'Gulim', sans-serif;
-      -webkit-font-smoothing: antialiased;
-      width: ${CONTENT_WIDTH}mm;
-      background-color: white;
-      color: black;
-    `;
+    // PDF 생성을 위한 스타일 정리
+    const buttonContainers = element.querySelectorAll('.button-container');
+    const tempStyles: { el: HTMLElement; display: string }[] = [];
     
-    // 숨겨진 위치에 복제본 추가
-    clonedElement.style.position = 'absolute';
-    clonedElement.style.left = '-9999px';
-    clonedElement.style.top = '0';
-    document.body.appendChild(clonedElement);
+    // 버튼 컨테이너 숨기기
+    buttonContainers.forEach(el => {
+      const htmlEl = el as HTMLElement;
+      tempStyles.push({ el: htmlEl, display: htmlEl.style.display });
+      htmlEl.style.display = 'none';
+    });
     
-    // Canvas로 변환 (해상도 향상)
-    const canvas = await html2canvas(clonedElement, {
-      scale: 3, // 해상도 증가
+    element.classList.add('pdf-generating');
+    
+    // A4 크기 설정
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+    
+    const margin = { top: 10, right: 10, bottom: 10, left: 10 };
+    const pageWidth = 210;
+    const contentWidth = pageWidth - margin.left - margin.right;
+    
+    // Canvas 생성
+    const canvas = await html2canvas(element, {
+      scale: 2,
       useCORS: true,
       logging: false,
       allowTaint: true,
-      backgroundColor: 'white' // CSS color name instead of hex
     });
     
-    // 복제본 제거
-    document.body.removeChild(clonedElement);
-    
-    // PDF 객체 생성 (A4 사이즈, 세로 방향)
-    const pdf = new jsPDF('p', 'mm', 'a4');
-    
-    // PDF 기본 설정
-    pdf.setTextColor(0, 0, 0);
-    
-    // Canvas 이미지 데이터
     const imgData = canvas.toDataURL('image/png');
-    
-    // 컨텐츠 크기 계산
-    const imgWidth = CONTENT_WIDTH;
+    const imgWidth = contentWidth;
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
     
-    // 페이지 수 계산
-    const pageCount = Math.ceil(imgHeight / CONTENT_HEIGHT);
+    // 페이지 분할 계산
+    const pageHeight = 297 - margin.top - margin.bottom;
+    const pageCount = Math.ceil(imgHeight / pageHeight);
     
-    // 이미지 총 높이(px)
-    const totalCanvasHeight = canvas.height;
-    // 각 페이지당 이미지 높이(px)
-    const pageCanvasHeight = totalCanvasHeight / pageCount;
-    
-    // 여러 페이지에 나눠서 그리기
-    for (let i = 0; i < pageCount; i++) {
-      // 첫 페이지가 아니면 새 페이지 추가
-      if (i > 0) {
-        pdf.addPage();
-      }
-      
-      // 현재 페이지에 그릴 이미지의 시작 위치 계산 (픽셀 단위)
-      const sourceY = Math.floor(i * pageCanvasHeight);
-      
-      // 현재 페이지에 그릴 이미지의 높이 계산 (픽셀 단위)
-      const sourceHeight = Math.min(pageCanvasHeight, totalCanvasHeight - sourceY);
-      
-      // PDF에 이미지 추가 (임시 캔버스 활용)
-      const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = canvas.width;
-      tempCanvas.height = sourceHeight;
-      
-      const tempCtx = tempCanvas.getContext('2d');
-      if (!tempCtx) continue;
-      
-      // 원본 캔버스에서 필요한 부분만 새 캔버스에 그림
-      tempCtx.drawImage(
-        canvas, 
-        0, sourceY, 
-        canvas.width, sourceHeight, 
-        0, 0, 
-        canvas.width, sourceHeight
-      );
-      
-      // 추출한 이미지 데이터
-      const pageImgData = tempCanvas.toDataURL('image/png');
-      
-      // 페이지 이미지의 PDF 높이 계산
-      const pageImgHeight = (sourceHeight * imgWidth) / canvas.width;
-      
-      // PDF에 이미지 추가
-      pdf.addImage(
-        pageImgData,
-        'PNG',
-        MARGIN_LEFT,
-        MARGIN_TOP,
-        imgWidth,
-        pageImgHeight
-      );
-      
-      // 첫 페이지에 제목 추가
-      if (i === 0 && title) {
-        pdf.setFontSize(16);
-        pdf.text(title, A4_WIDTH / 2, MARGIN_TOP - 2, { align: 'center' });
-      }
-      
-      // 페이지 번호 추가
-      pdf.setFontSize(8);
-      pdf.text(`${i + 1} / ${pageCount}`, A4_WIDTH / 2, A4_HEIGHT - 5, { align: 'center' });
+    // 제목 추가
+    if (title) {
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(16);
+      pdf.text(title, pageWidth / 2, margin.top + 10, { align: 'center' });
     }
     
-    // 마지막 페이지에 날짜와 서명 추가
-    if (date || signature) {
-      pdf.setPage(pageCount); // 마지막 페이지로 이동
+    // 이미지 추가 및 페이지 처리
+    for (let i = 0; i < pageCount; i++) {
+      if (i > 0) pdf.addPage();
       
-      if (date) {
-        pdf.setFontSize(10);
-        pdf.text(`날짜: ${date}`, A4_WIDTH - MARGIN_RIGHT, A4_HEIGHT - MARGIN_BOTTOM + 5, {
-          align: 'right'
-        });
-      }
+      const srcY = i * pageHeight;
+      const sliceHeight = Math.min(pageHeight, imgHeight - srcY);
       
-      if (signature) {
-        pdf.setFontSize(10);
-        pdf.text(`서명: ${signature}`, A4_WIDTH - MARGIN_RIGHT, A4_HEIGHT - MARGIN_BOTTOM + 10, {
-          align: 'right'
-        });
-      }
+      pdf.addImage(
+        imgData, 'PNG', 
+        margin.left, 
+        margin.top + (title ? 20 : 0), 
+        imgWidth, 
+        sliceHeight,
+        undefined, 
+        'FAST', 
+        srcY
+      );
     }
     
     // PDF 저장
     pdf.save(filename);
     
+    // 원래 스타일 복원
+    tempStyles.forEach(item => {
+      item.el.style.display = item.display;
+    });
+    element.classList.remove('pdf-generating');
+    
   } catch (error) {
-    console.error('PDF 생성 중 오류 발생:', error);
-    alert('PDF 생성 중 오류가 발생했습니다.');
+    console.error('PDF 생성 오류:', error);
+    throw error;
   }
-}; 
+}
+
+// Markdown 변환 유틸리티 함수 (동적 임포트 적용)
+export async function convertHtmlToMarkdown(html: string): Promise<string> {
+  try {
+    // 동적 임포트로 turndown 로드
+    const TurndownService = (await import('turndown')).default;
+    const turndownService = new TurndownService({
+      headingStyle: 'atx',
+      codeBlockStyle: 'fenced'
+    });
+    
+    return turndownService.turndown(html);
+  } catch (error) {
+    console.error('Markdown 변환 오류:', error);
+    throw error;
+  }
+}
+
+// CSV 내보내기 유틸리티
+export function exportToCsv(data: string, filename: string): void {
+  try {
+    const blob = new Blob(['\uFEFF' + data], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('CSV 내보내기 오류:', error);
+    throw error;
+  }
+}
+
+// Markdown 파일 내보내기 유틸리티
+export function exportToMarkdown(content: string, filename: string): void {
+  try {
+    const blob = new Blob([content], { type: 'text/markdown;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Markdown 내보내기 오류:', error);
+    throw error;
+  }
+} 

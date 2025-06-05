@@ -5,6 +5,7 @@ import EvaluationActions from '@/components/evaluation/EvaluationActions';
 import EvaluationCriteriaTable from '@/components/evaluation/EvaluationCriteriaTable';
 import GradingGuidelines from '@/components/schedule/GradingGuidelines';
 import { toast } from "@/components/ui/use-toast";
+import { exportToCsv, exportToMarkdown } from '@/utils/pdfUtils';
 import { EvaluationFormData, EvaluationResult } from './evaluation/types';
 
 const EvaluationSection = () => {
@@ -190,7 +191,7 @@ const EvaluationSection = () => {
     try {
       setIsCsvGenerating(true);
       
-      let csvContent = `\uFEFF작품 번호,${formData.seriesNumber}\n`;
+      let csvContent = `작품 번호,${formData.seriesNumber}\n`;
       csvContent += `심사 부문,${formData.category}\n`;
       csvContent += `작가명,${formData.artistName}\n`;
       csvContent += `작품명,${formData.workTitle}\n\n`;
@@ -203,18 +204,8 @@ const EvaluationSection = () => {
       csvContent += `작성일,${formData.currentDate}\n`;
       csvContent += `심사위원,${formData.judgeSignature}`;
       
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
       const filename = `심사표_${formData.seriesNumber}_${formData.artistName || 'unknown'}.csv`;
-      
-      link.setAttribute("href", url);
-      link.setAttribute("download", filename);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      exportToCsv(csvContent, filename);
       
     } catch (error) {
       console.error("CSV 생성 오류:", error);
@@ -250,17 +241,9 @@ const EvaluationSection = () => {
       markdownContent += `작성일: ${formData.currentDate}\n\n`;
       markdownContent += `심사위원: ${formData.judgeSignature}`;
       
-      const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
       const filename = `심사표_${formData.seriesNumber}_${formData.artistName || 'unknown'}.md`;
+      exportToMarkdown(markdownContent, filename);
       
-      link.setAttribute('href', url);
-      link.setAttribute('download', filename);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
     } catch (error) {
       console.error('마크다운 내보내기 오류:', error);
       alert('마크다운 파일을 생성하는 중 오류가 발생했습니다.');

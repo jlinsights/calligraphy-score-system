@@ -5,9 +5,7 @@ import ScheduleExport from './schedule/ScheduleExport';
 import PlanForm from './schedule/PlanForm';
 import EvaluationCriteria from './schedule/EvaluationCriteria';
 import GradingGuidelines from './schedule/GradingGuidelines';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
-import TurndownService from 'turndown';
+import { generatePdfFromElement, exportToCsv, exportToMarkdown } from '@/utils/pdfUtils';
 import { ScheduleFormData } from './schedule/types';
 
 const ScheduleSection = () => {
@@ -92,85 +90,9 @@ const ScheduleSection = () => {
     setIsPdfGenerating(true);
     
     try {
-      const form = formRef.current;
-      
-      const buttonContainers = form.querySelectorAll('.button-container');
-      const tempStyles: { el: HTMLElement; display: string }[] = [];
-      
-      buttonContainers.forEach(el => {
-        const htmlEl = el as HTMLElement;
-        tempStyles.push({ el: htmlEl, display: htmlEl.style.display });
-        htmlEl.style.display = 'none';
-      });
-      
-      form.classList.add('pdf-generating');
-      
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
-      });
-      
-      const margin = { top: 10, right: 10, bottom: 10, left: 10 };
-      const pageWidth = 210;
-      const contentWidth = pageWidth - margin.left - margin.right;
-      
-      try {
-        const canvas = await html2canvas(form, {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          allowTaint: true,
-        });
-        
-        const imgData = canvas.toDataURL('image/png');
-        const imgWidth = contentWidth;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        
-        const pageHeight = 297 - margin.top - margin.bottom;
-        const pageCount = Math.ceil(imgHeight / pageHeight);
-        
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(16);
-        pdf.text('심사 일정표', pageWidth / 2, margin.top + 10, { align: 'center' });
-        
-        for (let i = 0; i < pageCount; i++) {
-          if (i > 0) {
-            pdf.addPage();
-          }
-          
-          const srcY = i * pageHeight;
-          const sliceHeight = Math.min(pageHeight, imgHeight - srcY);
-          
-          pdf.addImage(
-            imgData, 'PNG', margin.left, margin.top + 20, imgWidth, sliceHeight,
-            undefined, 'FAST', srcY
-          );
-          
-          if (i === pageCount - 1) {
-            const footerY = Math.min(margin.top + 20 + sliceHeight + 10, 297 - margin.bottom - 10);
-            pdf.setFontSize(10);
-            pdf.text(`날짜: ${formData.currentDate}`, margin.left, footerY);
-            if (formData.judgeSignature) {
-              pdf.text(`심사위원장: ${formData.judgeSignature}`, pageWidth - margin.right, footerY, { align: 'right' });
-            }
-          }
-        }
-        
-        const filename = `심사일정표_${formData.evalCategory || '전체'}_${formData.evalDate || new Date().toISOString().split('T')[0]}.pdf`;
-        pdf.save(filename);
-        alert('심사 일정표가 PDF로 저장되었습니다.');
-        
-      } catch (err) {
-        console.error('Canvas 생성 오류:', err);
-        throw err;
-      }
-      
-      tempStyles.forEach(item => {
-        item.el.style.display = item.display;
-      });
-      form.classList.remove('pdf-generating');
-      
+      const filename = `심사일정표_${formData.evalCategory || '전체'}_${formData.evalDate || new Date().toISOString().split('T')[0]}.pdf`;
+      await generatePdfFromElement(formRef.current, filename, '심사 일정표');
+      alert('심사 일정표가 PDF로 저장되었습니다.');
     } catch (error) {
       console.error("PDF 생성 오류:", error);
       alert("PDF 파일을 생성하는 중 오류가 발생했습니다.");
@@ -182,7 +104,8 @@ const ScheduleSection = () => {
   const handleCsvExport = () => {
     try {
       setIsCsvGenerating(true);
-      let csvContent = `\uFEFF작성일:,${formData.currentDate}\n`;
+      
+      let csvContent = `작성일:,${formData.currentDate}\n`;
       csvContent += `심사 일시:,${formData.evalDate}\n`;
       csvContent += `심사 부문:,${formData.evalCategory}\n\n`;
       csvContent += '심사위원장:,' + formData.judgeChair + '\n';
@@ -195,18 +118,8 @@ const ScheduleSection = () => {
       csvContent += '\n\n';
       csvContent += `심사위원장:,${formData.judgeSignature}`;
       
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
       const filename = `심사계획서_${formData.evalCategory || '전체'}_${formData.evalDate || new Date().toISOString().split('T')[0]}.csv`;
-      
-      link.setAttribute("href", url);
-      link.setAttribute("download", filename);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      exportToCsv(csvContent, filename);
       
     } catch (error) {
       console.error("CSV 생성 오류:", error);
@@ -246,17 +159,8 @@ const ScheduleSection = () => {
       markdownContent += `---\n\n`;
       markdownContent += `**심사위원장:** ${formData.judgeSignature} (서명)\n\n`;
       
-      const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
       const filename = `심사일정표_${formData.evalCategory || '전체'}_${formData.evalDate || new Date().toISOString().split('T')[0]}.md`;
-      
-      link.setAttribute('href', url);
-      link.setAttribute('download', filename);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      exportToMarkdown(markdownContent, filename);
       
     } catch (error) {
       console.error('마크다운 내보내기 오류:', error);
