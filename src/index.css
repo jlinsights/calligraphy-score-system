@@ -7,85 +7,79 @@
 
 @layer base {
   :root {
-    --background: 39 33% 95%;
-    --foreground: 20 14.3% 4.1%;
+    /* Modern v0/shadcn color palette - Light Mode */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
 
     --card: 0 0% 100%;
-    --card-foreground: 20 14.3% 4.1%;
+    --card-foreground: 222.2 84% 4.9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 20 14.3% 4.1%;
+    --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 0 72.2% 48%;
-    --primary-foreground: 60 9.1% 97.8%;
+    --primary: 0 72% 48%;
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 35 38.5% 95.7%;
-    --secondary-foreground: 24 9.8% 10%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
 
-    --muted: 60 4.8% 95.9%;
-    --muted-foreground: 25 5.3% 44.7%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 32 98% 83%;
-    --accent-foreground: 24 9.8% 10%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 60 9.1% 97.8%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 20 5.9% 90%;
-    --input: 20 5.9% 90%;
-    --ring: 20 14.3% 4.1%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --calligraphy-black: 220 25% 14%;
-    --calligraphy-red: 0 72% 48%;
-    --calligraphy-paper: 39 33% 95%;
-    --calligraphy-gray: 214 3% 57%;
-    
-    --ink-black: #1a1a1a;
-    --rice-paper: #f5f5f0;
-    --celadon: #88A891;
-    --terra-red: #9B4444;
+    /* Calligraphy-specific variables */
+    --calligraphy-ink: 222.2 84% 4.9%;
+    --calligraphy-paper: 0 0% 100%;
+    --calligraphy-accent: 0 72% 48%;
+    --calligraphy-subtle: 210 40% 96%;
   }
 
   .dark {
-    --background: 220 20% 14%;
-    --foreground: 0 0% 98%;
+    /* Modern v0/shadcn color palette - Dark Mode */
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
 
-    --card: 220 20% 16%;
-    --card-foreground: 0 0% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 220 20% 14%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 0 72.2% 65%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 0 72% 55%;
+    --primary-foreground: 222.2 84% 4.9%;
 
-    --secondary: 215 15% 20%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 215 15% 20%;
-    --muted-foreground: 210 10% 90%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 0 56% 45%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 50%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 215 15% 30%;
-    --input: 215 15% 25%;
-    --ring: 215 15% 70%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
 
-    --calligraphy-black: 0 0% 98%;
-    --calligraphy-red: 0 72% 70%;
-    --calligraphy-paper: 220 20% 14%;
-    --calligraphy-gray: 214 10% 90%;
-    
-    --ink-black: #f8f8f8;
-    --rice-paper: #1e1e2e;
-    --celadon: #96b69e;
-    --terra-red: #e07676;
+    /* Calligraphy-specific variables */
+    --calligraphy-ink: 210 40% 98%;
+    --calligraphy-paper: 222.2 84% 4.9%;
+    --calligraphy-accent: 0 72% 60%;
+    --calligraphy-subtle: 217.2 32.6% 17.5%;
   }
 }
 
@@ -100,104 +94,52 @@
   }
 }
 
+/* Modern Calligraphy Components - v0/shadcn style */
 .calligraphy-title {
-  @apply font-bold text-4xl md:text-5xl mb-6 tracking-tight;
-  color: var(--ink-black, #1A1F2C);
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-}
-
-.dark .calligraphy-title {
-  color: var(--foreground, #f5f5f5);
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  @apply font-bold text-4xl md:text-5xl mb-6 tracking-tight text-foreground;
+  text-shadow: 0 1px 2px hsl(var(--foreground) / 0.1);
 }
 
 .calligraphy-section {
-  @apply rounded-lg shadow-md p-6 border transition-all;
-  background-color: var(--rice-paper, #F7F2E9);
-  border-color: var(--border, #E4D7C5);
-}
-
-.dark .calligraphy-section {
-  background-color: var(--card, #1e1e2e);
-  border-color: var(--border, #2d3a5e);
+  @apply rounded-xl shadow-sm p-6 border border-border bg-card text-card-foreground transition-all duration-200;
 }
 
 .calligraphy-section:hover {
-  @apply shadow-lg;
+  @apply shadow-md border-border/60;
 }
 
 .calligraphy-section-title {
-  @apply text-xl font-medium mb-4 pb-2 inline-block;
-  color: var(--ink-black, #1A1F2C);
-  border-bottom: 2px solid var(--terra-red, #C53030);
-}
-
-.dark .calligraphy-section-title {
-  color: var(--foreground, #f5f5f5);
-  border-bottom: 2px solid var(--primary, #d16868);
+  @apply text-xl font-semibold mb-4 pb-2 inline-block text-foreground;
+  border-bottom: 2px solid hsl(var(--primary));
 }
 
 .seal {
-  color: var(--terra-red, #C53030);
-  @apply font-bold;
+  @apply font-bold text-primary;
 }
 
-.dark .seal {
-  color: var(--primary, #d16868);
-}
-
-/* PDF 생성 관련 스타일 추가 */
+/* PDF generation optimization */
 .pdf-generating * {
   transition: none !important;
 }
 
-/* 버튼 텍스트가 보이도록 개선 */
+/* Button group styling */
 .button-group button {
-  font-weight: 500;
-  color: var(--primary-foreground) !important;
+  @apply font-medium;
 }
 
-/* 다크 모드 textarea 색상 조정 */
-.dark textarea {
-  color: var(--foreground) !important;
-  background-color: var(--card) !important;
-  border-color: var(--border) !important;
+/* Enhanced form elements */
+.form-input,
+.form-textarea,
+.form-select {
+  @apply bg-background border-input text-foreground placeholder:text-muted-foreground;
 }
 
-/* 다크 모드 가독성 개선 */
-.dark input,
-.dark textarea,
-.dark select {
-  color: hsl(var(--foreground)) !important;
-  background-color: hsl(var(--card)) !important;
-  border-color: hsl(var(--border)) !important;
+.signature-section {
+  @apply border-primary/50;
 }
 
-.dark button[role="combobox"] {
-  color: hsl(var(--foreground)) !important;
-  background-color: hsl(var(--card)) !important;
-  border-color: hsl(var(--border)) !important;
-}
-
-.dark label,
-.dark p,
-.dark h1,
-.dark h2,
-.dark h3,
-.dark h4,
-.dark h5,
-.dark h6,
-.dark span,
-.dark div {
-  color: hsl(var(--foreground));
-}
-
-.dark .signature-section {
-  border-color: hsl(var(--primary)) !important;
-}
-
-.dark .button-container {
-  border-color: hsl(var(--primary)) !important;
+.button-container {
+  @apply border-border;
 }
 
 /* 버튼 텍스트 가독성 개선 */

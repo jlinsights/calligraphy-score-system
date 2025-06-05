@@ -569,8 +569,8 @@ const ResultsSection = () => {
             </div>
           </div>
 
-          <div className="form-section mb-6 border-b border-border pb-4 mt-6">
-            <h3 className="text-xl font-medium mb-2 text-foreground border-b border-primary pb-2 inline-block">등급결정 및 동점자 처리</h3>
+          <div className="form-section mb-6 border-b border-border pb-4 mt-6 mx-auto max-w-5xl">
+            <h3 className="text-xl font-medium mb-4 text-foreground border-b border-primary pb-2">등급결정 및 동점자 처리</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <h4 className="font-medium mb-2 text-foreground">등급결정 기준</h4>
@@ -592,8 +592,8 @@ const ResultsSection = () => {
             </div>
           </div>
 
-          <div className="form-section mb-6 border-b border-border pb-4">
-            <h3 className="text-xl font-medium mb-2 text-foreground border-b border-primary pb-2 inline-block">심사결과 확정</h3>
+          <div className="form-section mb-6 border-b border-border pb-4 mx-auto max-w-5xl">
+            <h3 className="text-xl font-medium mb-4 text-foreground border-b border-primary pb-2">심사결과 확정</h3>
             <ol className="list-decimal pl-5 space-y-1 text-sm">
               <li>심사위원장은 종합심사 결과를 이사장에게 전달합니다.</li>
               <li>이사회는 심사결과를 검토하고 최종 승인합니다.</li>

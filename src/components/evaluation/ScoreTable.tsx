@@ -28,21 +28,21 @@ const ScoreTable: React.FC<ScoreTableProps> = ({
           <Table className="border border-border min-w-full">
             <TableHeader>
               <TableRow>
-                <TableHead rowSpan={2} className="text-center bg-muted border border-border w-[25%] sm:w-[20%] text-xs sm:text-sm">평가항목</TableHead>
+                <TableHead rowSpan={2} className="text-center bg-muted border border-border w-[15%] sm:w-[12%] text-xs sm:text-sm whitespace-normal">평가<br/>항목</TableHead>
                 <TableHead colSpan={5} className="text-center bg-muted border border-border text-xs sm:text-sm">득점 범위</TableHead>
                 <TableHead rowSpan={2} className="text-center bg-muted border border-border w-[20%] sm:w-[18%] text-xs sm:text-sm">획득점수</TableHead>
               </TableRow>
               <TableRow>
-                <TableHead className="text-center bg-muted border border-border w-[10%] text-xs">1-5</TableHead>
-                <TableHead className="text-center bg-muted border border-border w-[10%] text-xs">6-10</TableHead>
-                <TableHead className="text-center bg-muted border border-border w-[10%] text-xs">11-15</TableHead>
-                <TableHead className="text-center bg-muted border border-border w-[10%] text-xs">16-20</TableHead>
-                <TableHead className="text-center bg-muted border border-border w-[10%] text-xs">21-25</TableHead>
+                <TableHead className="text-center bg-muted border border-border w-[11%] text-xs">1-5</TableHead>
+                <TableHead className="text-center bg-muted border border-border w-[11%] text-xs">6-10</TableHead>
+                <TableHead className="text-center bg-muted border border-border w-[11%] text-xs">11-15</TableHead>
+                <TableHead className="text-center bg-muted border border-border w-[11%] text-xs">16-20</TableHead>
+                <TableHead className="text-center bg-muted border border-border w-[11%] text-xs">21-25</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               <TableRow>
-                <TableCell className="text-center border border-border text-xs sm:text-sm">점획(點劃)</TableCell>
+                <TableCell className="text-center border border-border text-xs sm:text-sm">點劃</TableCell>
                 <TableCell className="text-center border border-border p-0.5 sm:p-1">
                   <div className="flex justify-center space-x-0.5 sm:space-x-1">{renderScoreRange('points', 1, 5)}</div>
                 </TableCell>
@@ -68,7 +68,7 @@ const ScoreTable: React.FC<ScoreTableProps> = ({
               </TableRow>
               
               <TableRow>
-                <TableCell className="text-center border border-border text-xs sm:text-sm">결구(結構)</TableCell>
+                <TableCell className="text-center border border-border text-xs sm:text-sm">結構</TableCell>
                 <TableCell className="text-center border border-border p-0.5 sm:p-1">
                   <div className="flex justify-center space-x-0.5 sm:space-x-1">{renderScoreRange('structure', 1, 5)}</div>
                 </TableCell>
@@ -94,7 +94,7 @@ const ScoreTable: React.FC<ScoreTableProps> = ({
               </TableRow>
               
               <TableRow>
-                <TableCell className="text-center border border-border text-xs sm:text-sm">장법(章法)</TableCell>
+                <TableCell className="text-center border border-border text-xs sm:text-sm">章法</TableCell>
                 <TableCell className="text-center border border-border p-0.5 sm:p-1">
                   <div className="flex justify-center space-x-0.5 sm:space-x-1">{renderScoreRange('composition', 1, 5)}</div>
                 </TableCell>
@@ -120,7 +120,7 @@ const ScoreTable: React.FC<ScoreTableProps> = ({
               </TableRow>
               
               <TableRow>
-                <TableCell className="text-center border border-border text-xs sm:text-sm">조화(調和)</TableCell>
+                <TableCell className="text-center border border-border text-xs sm:text-sm">調和</TableCell>
                 <TableCell className="text-center border border-border p-0.5 sm:p-1">
                   <div className="flex justify-center space-x-0.5 sm:space-x-1">{renderScoreRange('harmony', 1, 5)}</div>
                 </TableCell>
