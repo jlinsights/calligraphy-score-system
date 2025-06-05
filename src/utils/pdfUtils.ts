@@ -65,7 +65,7 @@ export const generatePdfFromElement = async (
       useCORS: true,
       logging: false,
       allowTaint: true,
-      backgroundColor: '#ffffff'
+      backgroundColor: 'white' // CSS color name instead of hex
     });
     
     // 복제본 제거

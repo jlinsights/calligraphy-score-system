@@ -187,23 +187,7 @@ table {
   color: hsl(var(--foreground)) !important;
 }
 
-/* 테두리 색상 개선 */
-.dark .border-\[\#E4D7C5\] {
-  border-color: hsl(var(--border)) !important;
-}
-
-.dark .border-gray-300 {
-  border-color: hsl(var(--border)) !important;
-}
-
-/* 다크 모드에서 배경색 개선 */
-.dark .bg-\[\#f8f9fa\] {
-  background-color: hsl(var(--card)) !important;
-}
-
-.dark .bg-white {
-  background-color: hsl(var(--card)) !important;
-}
+/* Legacy styles removed - now using proper CSS variables */
 
 /* 테이블 스타일 다크모드 개선 추가 */
 .dark .bg-card {

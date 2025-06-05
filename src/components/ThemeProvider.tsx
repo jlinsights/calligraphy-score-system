@@ -24,7 +24,8 @@ const updateFavicon = (isDarkMode: boolean) => {
   }
   
   if (themeColorMeta) {
-    themeColorMeta.content = isDarkMode ? '#1e1e2e' : '#ffffff';
+    // Use CSS custom properties that match our design system
+    themeColorMeta.content = isDarkMode ? 'hsl(222.2 84% 4.9%)' : 'hsl(0 0% 100%)';
   }
 };
 
